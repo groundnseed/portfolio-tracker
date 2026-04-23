@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jin's Portfolio</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans KR','Malgun Gothic',sans-serif;
+    background: #0b1220; color: #e4e7ef; padding: 16px; min-height: 100vh;
+  }
+  .wrap { max-width: 1700px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; color: #fbbf24; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #8ea3c7; margin-bottom: 18px; }
+  .card { background: #111a2d; border: 1px solid #1e2a44; border-radius: 14px; padding: 16px 18px 20px; margin-bottom: 18px; }
+  .card.today { background: linear-gradient(135deg, #2a1d0b 0%, #1a1408 100%); border: 2px solid #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.15); }
+  .card-title { font-size: 14px; font-weight: 700; color: #b8c5dc; margin-bottom: 10px; text-align: center; letter-spacing: 0.02em; }
+  .card.today .card-title { color: #fbbf24; font-size: 16px; text-align: left; }
+  .trade-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 6px; background: rgba(251, 191, 36, 0.08); border-radius: 8px; border-left: 3px solid #fbbf24; flex-wrap: wrap; }
+  .trade-row:last-child { margin-bottom: 0; }
+  .trade-flag { font-size: 16px; }
+  .trade-ticker { font-weight: 700; min-width: 110px; color: #fbbf24; }
+  .trade-detail { color: #e4e7ef; font-size: 13px; flex: 1; min-width: 180px; }
+  .trade-time { color: #8ea3c7; font-size: 12px; font-family: monospace; }
+  .no-trade { color: #6b7280; font-size: 13px; padding: 8px 0; }
+  .chart-box { position: relative; height: 420px; min-width: 1071px; }
+  .chart-scroll { overflow-x: auto; overflow-y: hidden; }
+  .chart-box-trend { position: relative; height: 480px; }
+  .err { background: #3b1d24; color: #ff9b9b; padding: 14px; border-radius: 8px; font-size: 13px; margin: 12px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Jin's Portfolio</h1>
+  <div class="sub" id="subLine">2026 봄학기 · 3/10 ~ 4/23 · 31개 변동 · 확장포폴 제외</div>
+
+  <div class="card today">
+    <div class="card-title">📅 오늘 매수 예정 · <span id="todayDate"></span></div>
+    <div id="todayList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" id="holdingsTitle">Jin's Portfolio 종목별 비중 (4/23 기준, 총 92.5%)</div>
+    <div class="chart-scroll"><div class="chart-box"><canvas id="holdingsChart"></canvas></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Jin's Portfolio 비중 변화 (3/10 신학기 → 4/23)</div>
+    <div class="chart-box-trend"><canvas id="trendChart"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Jin's Portfolio 누적 수익률 <span style="color:#6b7280;font-size:11px;font-weight:400;">(각 변동일 종가 기준 포지션 가중)</span></div>
+    <div class="chart-box-trend"><canvas id="returnTrendChart"></canvas></div>
+    <div style="text-align:center; color:#6b7280; font-size:11px; margin-top:6px;" id="returnNote">
+      💡 기준가 = 거래일(변동일+1영업일, 주말·휴장이면 첫 영업일) 시가×0.5 + 종가×0.5
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" id="stockReturnTitle">종목별 현재 수익률 (4/23 기준)</div>
+    <div class="chart-scroll"><div class="chart-box"><canvas id="stockReturnChart"></canvas></div></div>
+  </div>
+
+  <div id="err"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  try {
+    if (typeof Chart === 'undefined') throw new Error('Chart.js failed to load');
+    if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
+
+    // ─── Today date ───
+    const now = new Date();
+    const kstNow = new Date(now.getTime() + (now.getTimezoneOffset() + 9*60) * 60000);
+    const todayLabel = (kstNow.getMonth() + 1) + '/' + kstNow.getDate();
+    document.getElementById('todayDate').textContent =
+      todayLabel + ' (' + ['일','월','화','수','목','금','토'][kstNow.getDay()] + ')';
+
+    // ─── 종목별 보유 (4/23 반영) · KR 먼저, US 뒤 ───
+    // delta: +N 또는 -N (%p 변화량), today:true → 오늘 거래
+    const holdings = [
+      // 🇰🇷 KR
+      { name:'KODEX200',   market:'kr', pct:10.0 },
+      { name:'삼성전기',    market:'kr', pct:6.0 },
+      { name:'OCI',        market:'kr', pct:5.0 },
+      { name:'SK하이닉스',  market:'kr', pct:4.5 },
+      { name:'삼성전자',    market:'kr', pct:4.0 },
+      { name:'KB금융',     market:'kr', pct:4.0 },
+      { name:'미래에셋',    market:'kr', pct:4.0 },
+      { name:'LS Elec',    market:'kr', pct:4.0, today:true, delta:1, note:'3→4 · 어제 퇴근길 기입' },
+      { name:'두산에너',    market:'kr', pct:4.0 },
+      { name:'현대건설',    market:'kr', pct:3.0 },
+      { name:'현대차',      market:'kr', pct:3.0 },
+      // 🇺🇲 US (내림차순 정렬)
+      { name:'IWM',        market:'us', pct:6.0 },
+      { name:'AVGO',       market:'us', pct:5.0, today:true, delta:1, note:'4→5 · 오늘 모닝 기입' },
+      { name:'INTC',       market:'us', pct:5.0 },
+      { name:'LRCX',       market:'us', pct:4.0 },
+      { name:'VRT',        market:'us', pct:4.0 },
+      { name:'CITY',       market:'us', pct:4.0 },
+      { name:'CAT',        market:'us', pct:4.0, today:true, delta:1, note:'3→4 · 오늘 모닝 기입' },
+      { name:'LITE',       market:'us', pct:4.0 },
+      { name:'SNDK',       market:'us', pct:3.0 },
+      { name:'GOOG',       market:'us', pct:2.0 }
+    ];
+    const krTotal = holdings.filter(h => h.market==='kr').reduce((s,h)=>s+h.pct,0);
+    const usTotal = holdings.filter(h => h.market==='us').reduce((s,h)=>s+h.pct,0);
+    const grandTotal = krTotal + usTotal;
+    document.getElementById('holdingsTitle').textContent =
+      `Jin's Portfolio 종목별 비중 (${todayLabel} 기준, 총 ${grandTotal.toFixed(1)}%)`;
+    document.getElementById('subLine').textContent =
+      `2026 봄학기 · 3/10 ~ ${todayLabel} · 확장포폴 제외 · 총 ${grandTotal.toFixed(1)}% (🇰🇷 ${krTotal.toFixed(1)}% + 🇺🇲 ${usTotal.toFixed(1)}%)`;
+
+    // ─── 오늘 매수 예정 카드 ───
+    const todayListEl = document.getElementById('todayList');
+    const todayStocks = holdings.filter(h => h.today);
+    if (todayStocks.length > 0) {
+      todayStocks.forEach(s => {
+        const flag = s.market === 'kr' ? '🇰🇷' : '🇺🇲';
+        const time = s.market === 'kr' ? '오전 09:00 / 오후 15:20 KST' : '밤 22:30 / 새벽 04:55 KST (NY 09:30/15:55)';
+        const row = document.createElement('div');
+        row.className = 'trade-row';
+        row.innerHTML =
+          '<span class="trade-flag">' + flag + '</span>' +
+          '<span class="trade-ticker">' + s.name + '</span>' +
+          '<span class="trade-detail">매수 +' + s.delta + '%p (' + s.note + ')</span>' +
+          '<span class="trade-time">' + time + '</span>';
+        todayListEl.appendChild(row);
+      });
+    } else {
+      todayListEl.innerHTML = '<div class="no-trade">오늘 매수 예정 종목 없음 — 편한 하루 되세요 ☕</div>';
+    }
+
+    // ─── 비중 변화 이력 (callout: 주요 이벤트) ───
+    const events = [
+      { date:'3/10', kr:20.0, us:10.0, total:30.0 },
+      { date:'3/17', kr:30.0, us:10.0, total:40.0 },
+      { date:'3/19', kr:31.0, us:10.0, total:41.0 },
+      { date:'3/20', kr:31.0, us:11.0, total:42.0 },
+      { date:'3/22', kr:31.0, us:11.0, total:42.0 },
+      { date:'3/23', kr:22.5, us:11.0, total:33.5, callout:{ text:'위험조정\nAVGO/COHR\n편출', dx: 20, dy: -72 } },
+      { date:'3/25', kr:22.5, us:9.0,  total:31.5 },
+      { date:'3/26', kr:20.5, us:9.0,  total:29.5 },
+      { date:'3/27', kr:15.0, us:8.0,  total:23.0 },
+      { date:'3/29', kr:17.0, us:8.0,  total:25.0 },
+      { date:'3/31', kr:17.0, us:4.0,  total:21.0 },
+      { date:'4/3',  kr:17.0, us:8.0,  total:25.0 },
+      { date:'4/5',  kr:18.0, us:8.0,  total:26.0 },
+      { date:'4/7',  kr:18.0, us:10.0, total:28.0 },
+      { date:'4/8',  kr:31.0, us:10.0, total:41.0, callout:{ text:'휴전선언\n한국+13%p', dx: -95, dy: -20 } },
+      { date:'4/9',  kr:31.0, us:18.0, total:49.0 },
+      { date:'4/10', kr:31.0, us:21.0, total:52.0 },
+      { date:'4/12', kr:32.0, us:25.0, total:57.0 },
+      { date:'4/13', kr:33.0, us:25.0, total:58.0 },
+      { date:'4/14', kr:37.0, us:29.0, total:66.0, callout:{ text:'LIVE 6\n대쪽증액', dx: 50, dy: -70 } },
+      { date:'4/15', kr:37.0, us:34.0, total:71.0 },
+      { date:'4/16', kr:41.0, us:34.0, total:75.0 },
+      { date:'4/17', kr:41.0, us:35.0, total:76.0 },
+      { date:'4/19', kr:42.0, us:38.0, total:80.0 },
+      { date:'4/21', kr:46.0, us:38.0, total:84.0 },
+      { date:'4/22', kr:50.5, us:40.0, total:90.5 },
+      { date:'4/23', kr:51.5, us:41.0, total:92.5, callout:{ text:'오늘\nAVGO/CAT +1%p\nLS Elec +1%p', targetDate: '4/3', targetY: 85 } }
+    ];
+
+    // ═══════════════════════════════════════════════════
+    // 📊 종목별 바 차트 (좌: 🇰🇷 / 우: 🇺🇲 · 가운데 점선)
+    // ═══════════════════════════════════════════════════
+    const lastKR = holdings.map(h=>h.market).lastIndexOf('kr');  // 분리선 왼쪽 인덱스
+
+    // 커스텀 플러그인: 가운데 점선, 국가 라벨, "▲+Xp" 콜아웃, "X/X 변경" 뱃지
+    const holdingsOverlay = {
+      id: 'holdingsOverlay',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const meta = chart.getDatasetMeta(0);
+        const chartArea = chart.chartArea;
+        if (!meta || !meta.data.length) return;
+
+        // ── 1. 가운데 세로 점선 ──
+        const leftBar = meta.data[lastKR];
+        const rightBar = meta.data[lastKR + 1];
+        if (leftBar && rightBar) {
+          const dividerX = (leftBar.x + rightBar.x) / 2;
+          ctx.save();
+          ctx.strokeStyle = '#4b5563';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.moveTo(dividerX, chartArea.top);
+          ctx.lineTo(dividerX, chartArea.bottom);
+          ctx.stroke();
+          ctx.restore();
+
+          // ── 2. "한국 XX%" / "미국 XX%" 큰 중앙 라벨 ──
+          const krCenterX = (chartArea.left + dividerX) / 2;
+          const usCenterX = (dividerX + chartArea.right) / 2;
+          const labelY = chartArea.top + 26;
+          ctx.save();
+          ctx.font = 'bold 18px "Noto Sans KR", sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#e57373';
+          ctx.fillText(`한국 ${krTotal.toFixed(1)}%`, krCenterX, labelY);
+          ctx.fillStyle = '#7cc88a';
+          ctx.fillText(`미국 ${usTotal.toFixed(1)}%`, usCenterX, labelY);
+          ctx.restore();
+        }
+
+        // ── 3. 우상단 "X/X 변경" 뱃지 ──
+        ctx.save();
+        ctx.font = 'bold 12px "Noto Sans KR", sans-serif';
+        const badgeText = `${todayLabel} 변경`;
+        const bw = ctx.measureText(badgeText).width + 18;
+        const bh = 26;
+        const bx = chartArea.right - bw - 6;
+        const by = chartArea.top + 6;
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 1.3;
+        roundRect(ctx, bx, by, bw, bh, 5);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#fbbf24';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badgeText, bx + bw/2, by + bh/2);
+        ctx.restore();
+
+        // ── 4. "▲+X%" 금색 테두리 · 금색 글씨 콜아웃 (오늘 거래 종목 위) ──
+        //    막대보다 살짝 작게 → 막대 위에 깔끔히 앉도록
+        holdings.forEach((h, i) => {
+          if (!h.today) return;
+          const bar = meta.data[i];
+          if (!bar) return;
+          ctx.save();
+          ctx.font = 'bold 9.5px "Noto Sans KR", sans-serif';
+          const text = `▲+${h.delta}%`;
+          const tw = ctx.measureText(text).width + 8;
+          const th = 17;
+          const tx = bar.x - tw/2;
+          // 숫자 라벨 위로 띄우기
+          const ty = bar.y - th - 22;
+          // 진한 바탕 + 금색 테두리 + 금색 글씨
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.96)';
+          ctx.strokeStyle = '#fbbf24';
+          ctx.lineWidth = 1.5;
+          roundRect(ctx, tx, ty, tw, th, 4);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#fcd34d';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(text, bar.x, ty + th/2);
+          ctx.restore();
+        });
+      }
+    };
+
+    function roundRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x+r, y);
+      ctx.lineTo(x+w-r, y);
+      ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+      ctx.lineTo(x+w, y+h-r);
+      ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+      ctx.lineTo(x+r, y+h);
+      ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+      ctx.lineTo(x, y+r);
+      ctx.quadraticCurveTo(x, y, x+r, y);
+      ctx.closePath();
+    }
+
+    const hCtx = document.getElementById('holdingsChart').getContext('2d');
+    new Chart(hCtx, {
+      type: 'bar',
+      data: {
+        labels: holdings.map(h => h.name),
+        datasets: [{
+          label: '비중',
+          data: holdings.map(h => h.pct),
+          backgroundColor: holdings.map(h => h.market === 'kr' ? '#e57373' : '#7cc88a'),
+          borderColor: holdings.map(h => h.today ? '#fbbf24' : 'transparent'),
+          borderWidth: holdings.map(h => h.today ? 2.5 : 0),
+          borderRadius: 3,
+          maxBarThickness: 45,
+          categoryPercentage: 0.80,
+          barPercentage: 1.0
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 50, right: 10, left: 6 } },
+        plugins: {
+          legend: {
+            display: true, position: 'top', align: 'end',
+            labels: {
+              color: '#b8c5dc', font: { size: 11 }, boxWidth: 14, boxHeight: 10,
+              generateLabels: () => {
+                const krCount = holdings.filter(h => h.market === 'kr').length;
+                const usCount = holdings.filter(h => h.market === 'us').length;
+                return [
+                  { text: `한국 (${krCount}종목)`, fillStyle: '#e57373', strokeStyle: '#e57373', hidden: false, index: 0 },
+                  { text: `미국 (${usCount}종목)`, fillStyle: '#7cc88a', strokeStyle: '#7cc88a', hidden: false, index: 1 }
+                ];
+              }
+            },
+            onClick: () => {}
+          },
+          datalabels: {
+            color: '#e4e7ef',
+            anchor: 'end', align: 'top', offset: 2,
+            font: { size: 11, weight: '700' },
+            formatter: v => v + '%'
+          },
+          tooltip: {
+            backgroundColor: '#0b1424', titleColor: '#fbbf24', bodyColor: '#e4e7ef',
+            callbacks: {
+              label: ctx => {
+                const h = holdings[ctx.dataIndex];
+                let s = ctx.raw + '%';
+                if (h.today) s += '  🎯 +' + h.delta + '%p (' + h.note + ')';
+                return s;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { color: '#b8c5dc', font: { size: 11 }, maxRotation: 45, minRotation: 45, autoSkip: false }, grid: { display: false } },
+          y: { ticks: { color: '#6b7280', callback: v => v + '%' }, grid: { color: '#1e2a44' }, beginAtZero: true, suggestedMax: 12 }
+        }
+      },
+      plugins: [holdingsOverlay]
+    });
+
+    // ═══════════════════════════════════════════════════
+    // 📈 비중 변화 추이 (누적선 · 총/🇰🇷/🇺🇲)
+    // ═══════════════════════════════════════════════════
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: events.map(e => e.date),
+        datasets: [
+          { label: '총 주식비중', data: events.map(e => e.total), borderColor: '#5ba3f5',
+             backgroundColor: 'rgba(91,163,245,0.10)', borderWidth: 2.6, pointRadius: 3.5,
+             pointHoverRadius: 6, fill: true, tension: 0.25, order: 3 },
+          { label: '🇰🇷 한국',  data: events.map(e => e.kr),    borderColor: '#e57373',
+             backgroundColor: 'transparent', borderWidth: 2, pointRadius: 2.5,
+             pointHoverRadius: 5, tension: 0.25, order: 2 },
+          { label: '🇺🇲 미국',  data: events.map(e => e.us),    borderColor: '#7cc88a',
+             backgroundColor: 'transparent', borderWidth: 2, pointRadius: 2.5,
+             pointHoverRadius: 5, tension: 0.25, order: 1 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 20, right: 20, left: 6, bottom: 6 } },
+        plugins: {
+          legend: { display: true, position: 'bottom',
+                    labels: { color: '#b8c5dc', font: { size: 11 }, boxWidth: 14, boxHeight: 8 } },
+          datalabels: { display: false },
+          tooltip: { backgroundColor: '#0b1424', titleColor: '#fbbf24', bodyColor: '#e4e7ef',
+                     callbacks: { label: c => c.dataset.label + ': ' + c.raw.toFixed(1) + '%' } }
+        },
+        scales: {
+          x: { ticks: { color: '#6b7280', font: { size: 10 }, maxRotation: 45 }, grid: { color: '#1e2a44' } },
+          y: { ticks: { color: '#6b7280', callback: v => v + '%' }, grid: { color: '#1e2a44' }, beginAtZero: true }
+        }
+      }
+    });
+
+    // ═══════════════════════════════════════════════════
+    // 💰 누적 수익률 추이 (기준가 × 현재가 · 총/🇰🇷/🇺🇲)
+    // ═══════════════════════════════════════════════════
+    const returnEvents = [
+      {
+            "date": "3/10",
+            "totalReturn": -1.49,
+            "krReturn": -2.42,
+            "usReturn": 0.38
+      },
+      {
+            "date": "3/17",
+            "totalReturn": -0.43,
+            "krReturn": 0.01,
+            "usReturn": -1.76
+      },
+      {
+            "date": "3/19",
+            "totalReturn": 4.98,
+            "krReturn": 5.46,
+            "usReturn": 3.46
+      },
+      {
+            "date": "3/20",
+            "totalReturn": 3.67,
+            "krReturn": 5.63,
+            "usReturn": -1.86
+      },
+      {
+            "date": "3/22",
+            "totalReturn": -1.55,
+            "krReturn": -2.06,
+            "usReturn": -0.09
+      },
+      {
+            "date": "3/23",
+            "totalReturn": -1.13,
+            "krReturn": -1.68,
+            "usReturn": -0.09
+      },
+      {
+            "date": "3/25",
+            "totalReturn": 1.94,
+            "krReturn": 0.74,
+            "usReturn": 4.22
+      },
+      {
+            "date": "3/26",
+            "totalReturn": -1.42,
+            "krReturn": 0.26,
+            "usReturn": -4.32
+      },
+      {
+            "date": "3/27",
+            "totalReturn": -3.26,
+            "krReturn": -2.35,
+            "usReturn": -4.49
+      },
+      {
+            "date": "3/29",
+            "totalReturn": -5.01,
+            "krReturn": -2.1,
+            "usReturn": -9.51
+      },
+      {
+            "date": "3/31",
+            "totalReturn": -4.13,
+            "krReturn": -5.43,
+            "usReturn": -1.6
+      },
+      {
+            "date": "4/3",
+            "totalReturn": 4.58,
+            "krReturn": 5.67,
+            "usReturn": 3.17
+      },
+      {
+            "date": "4/5",
+            "totalReturn": 3.27,
+            "krReturn": 3.33,
+            "usReturn": 3.17
+      },
+      {
+            "date": "4/7",
+            "totalReturn": 2.91,
+            "krReturn": 0.26,
+            "usReturn": 6.04
+      },
+      {
+            "date": "4/8",
+            "totalReturn": 8.67,
+            "krReturn": 4.13,
+            "usReturn": 16.6
+      },
+      {
+            "date": "4/9",
+            "totalReturn": 7.89,
+            "krReturn": 3.2,
+            "usReturn": 13.1
+      },
+      {
+            "date": "4/10",
+            "totalReturn": 8.62,
+            "krReturn": 5.02,
+            "usReturn": 12.29
+      },
+      {
+            "date": "4/12",
+            "totalReturn": 8.55,
+            "krReturn": 3.74,
+            "usReturn": 12.94
+      },
+      {
+            "date": "4/13",
+            "totalReturn": 8.23,
+            "krReturn": 3.25,
+            "usReturn": 12.94
+      },
+      {
+            "date": "4/14",
+            "totalReturn": 8.16,
+            "krReturn": 4.75,
+            "usReturn": 11.32
+      },
+      {
+            "date": "4/15",
+            "totalReturn": 8.89,
+            "krReturn": 8.72,
+            "usReturn": 9.04
+      },
+      {
+            "date": "4/16",
+            "totalReturn": 13.42,
+            "krReturn": 15.73,
+            "usReturn": 11.08
+      },
+      {
+            "date": "4/17",
+            "totalReturn": 12.92,
+            "krReturn": 13.5,
+            "usReturn": 12.34
+      },
+      {
+            "date": "4/19",
+            "totalReturn": 11.92,
+            "krReturn": 13.38,
+            "usReturn": 10.56
+      },
+      {
+            "date": "4/21",
+            "totalReturn": 13.3,
+            "krReturn": 17.21,
+            "usReturn": 9.24
+      },
+      {
+            "date": "4/22",
+            "totalReturn": 14.98,
+            "krReturn": 18.85,
+            "usReturn": 10.88
+      },
+      {
+            "date": "4/23",
+            "totalReturn": 15.84,
+            "krReturn": 20.52,
+            "usReturn": 10.88
+      }
+];
+
+    const rtCtx = document.getElementById('returnTrendChart').getContext('2d');
+    new Chart(rtCtx, {
+      type: 'line',
+      data: {
+        labels: returnEvents.map(e => e.date),
+        datasets: [
+          { label: '총 수익률',  data: returnEvents.map(e => e.totalReturn),
+             borderColor: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.15)',
+             borderWidth: 3, pointRadius: 4, pointHoverRadius: 7, pointBackgroundColor: '#fbbf24',
+             pointBorderColor: '#0f1a2e', pointBorderWidth: 2, fill: true, tension: 0.3, order: 3 },
+          { label: '🇰🇷 한국',  data: returnEvents.map(e => e.krReturn),
+             borderColor: '#e57373', backgroundColor: 'transparent',
+             borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.3, order: 2 },
+          { label: '🇺🇲 미국',  data: returnEvents.map(e => e.usReturn),
+             borderColor: '#7cc88a', backgroundColor: 'transparent',
+             borderWidth: 2, pointRadius: 2.5, pointHoverRadius: 5, tension: 0.3, order: 1 }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 24, right: 20, left: 6, bottom: 6 } },
+        plugins: {
+          legend: { display: true, position: 'bottom',
+                    labels: { color: '#b8c5dc', font: { size: 11 }, boxWidth: 14, boxHeight: 8 } },
+          datalabels: {
+            display: (ctx) => ctx.datasetIndex === 0 && ctx.dataIndex === ctx.dataset.data.length - 1,
+            color: '#fbbf24', anchor: 'end', align: 'top', offset: 6,
+            font: { size: 12, weight: '700' },
+            formatter: v => (v >= 0 ? '+' : '') + v.toFixed(2) + '%'
+          },
+          tooltip: { backgroundColor: '#0b1424', titleColor: '#fbbf24', bodyColor: '#e4e7ef',
+                     callbacks: { label: c => c.dataset.label + ': ' + (c.raw >= 0 ? '+' : '') + c.raw.toFixed(2) + '%' } }
+        },
+        scales: {
+          x: { ticks: { color: '#6b7280', font: { size: 10 }, maxRotation: 45 }, grid: { color: '#1e2a44' } },
+          y: { ticks: { color: '#6b7280', callback: v => (v >= 0 ? '+' : '') + v + '%' }, grid: { color: '#1e2a44' } }
+        }
+      }
+    });
+
+    // 상단 노트: 최종 수익률 요약
+    document.getElementById('returnNote').innerHTML =
+      '💡 기준가 = 거래일(변동일+1영업일, 주말·휴장이면 첫 영업일) 시가×0.5 + 종가×0.5  ·  ' +
+      '<b style="color:#fbbf24">전체 +15.84%</b>  ·  ' +
+      '<b style="color:#e57373">🇰🇷 +20.52%</b>  ·  ' +
+      '<b style="color:#7cc88a">🇺🇲 +10.88%</b>  ·  ' +
+      '<span style="color:#6b7280">(총 비중 82.5%)</span>';
+
+    // ═══════════════════════════════════════════════════
+    // 🏷 종목별 현재 수익률 (막대 차트)
+    // ═══════════════════════════════════════════════════
+    const stockReturns = [
+      {
+            "ticker": "KRX:069500",
+            "name": "KODEX 200",
+            "market": "kr",
+            "pct": 10.0,
+            "basisPrice": 93065.0,
+            "currentPrice": 98355,
+            "returnPct": 5.68
+      },
+      {
+            "ticker": "KRX:009150",
+            "name": "삼성전기",
+            "market": "kr",
+            "pct": 6.0,
+            "basisPrice": 518233.33,
+            "currentPrice": 774000,
+            "returnPct": 49.35
+      },
+      {
+            "ticker": "KRX:010060",
+            "name": "OCI홀딩스",
+            "market": "kr",
+            "pct": 5.0,
+            "basisPrice": 208242.86,
+            "currentPrice": 322000,
+            "returnPct": 54.63
+      },
+      {
+            "ticker": "KRX:000660",
+            "name": "SK하이닉스",
+            "market": "kr",
+            "pct": 4.5,
+            "basisPrice": 1053700.0,
+            "currentPrice": 1225000,
+            "returnPct": 16.26
+      },
+      {
+            "ticker": "KRX:005930",
+            "name": "삼성전자",
+            "market": "kr",
+            "pct": 4.0,
+            "basisPrice": 203000.0,
+            "currentPrice": 224500,
+            "returnPct": 10.59
+      },
+      {
+            "ticker": "KRX:105560",
+            "name": "KB금융",
+            "market": "kr",
+            "pct": 4.0,
+            "basisPrice": 158450.0,
+            "currentPrice": 158000,
+            "returnPct": -0.28
+      },
+      {
+            "ticker": "KRX:034020",
+            "name": "두산에너빌리티",
+            "market": "kr",
+            "pct": 4.0,
+            "basisPrice": 108350.0,
+            "currentPrice": 122600,
+            "returnPct": 13.15
+      },
+      {
+            "ticker": "KRX:006800",
+            "name": "미래에셋증권",
+            "market": "kr",
+            "pct": 4.0,
+            "basisPrice": 69704.17,
+            "currentPrice": 67700,
+            "returnPct": -2.88
+      },
+      {
+            "ticker": "KRX:010120",
+            "name": "LS ELECTRIC",
+            "market": "kr",
+            "pct": 4.0,
+            "basisPrice": 186825.0,
+            "currentPrice": 217000,
+            "returnPct": 16.15
+      },
+      {
+            "ticker": "KRX:000720",
+            "name": "현대건설",
+            "market": "kr",
+            "pct": 3.0,
+            "basisPrice": 176583.33,
+            "currentPrice": 175400,
+            "returnPct": -0.67
+      },
+      {
+            "ticker": "KRX:005380",
+            "name": "현대차",
+            "market": "kr",
+            "pct": 3.0,
+            "basisPrice": 540833.33,
+            "currentPrice": 532000,
+            "returnPct": -1.63
+      },
+      {
+            "ticker": "NYSEARCA:IWM",
+            "name": "iShares Russell 2000",
+            "market": "us",
+            "pct": 6.0,
+            "basisPrice": 268.58,
+            "currentPrice": 276.48,
+            "returnPct": 2.94
+      },
+      {
+            "ticker": "NASDAQ:INTC",
+            "name": "Intel",
+            "market": "us",
+            "pct": 5.0,
+            "basisPrice": 55.3,
+            "currentPrice": 65.27,
+            "returnPct": 18.04
+      },
+      {
+            "ticker": "NASDAQ:AVGO",
+            "name": "Broadcom",
+            "market": "us",
+            "pct": 4.0,
+            "basisPrice": 386.34,
+            "currentPrice": 422.65,
+            "returnPct": 9.4
+      },
+      {
+            "ticker": "NASDAQ:LRCX",
+            "name": "Lam Research",
+            "market": "us",
+            "pct": 4.0,
+            "basisPrice": 236.25,
+            "currentPrice": 265.55,
+            "returnPct": 12.4
+      },
+      {
+            "ticker": "NYSE:VRT",
+            "name": "Vertiv",
+            "market": "us",
+            "pct": 4.0,
+            "basisPrice": 279.35,
+            "currentPrice": 305.14,
+            "returnPct": 9.23
+      },
+      {
+            "ticker": "NYSE:C",
+            "name": "Citigroup",
+            "market": "us",
+            "pct": 4.0,
+            "basisPrice": 127.67,
+            "currentPrice": 129.73,
+            "returnPct": 1.62
+      },
+      {
+            "ticker": "NASDAQ:SNDK",
+            "name": "SanDisk",
+            "market": "us",
+            "pct": 3.0,
+            "basisPrice": 763.12,
+            "currentPrice": 979.07,
+            "returnPct": 28.3
+      },
+      {
+            "ticker": "NYSE:CAT",
+            "name": "Caterpillar",
+            "market": "us",
+            "pct": 3.0,
+            "basisPrice": 785.06,
+            "currentPrice": 808.87,
+            "returnPct": 3.03
+      },
+      {
+            "ticker": "NASDAQ:LITE",
+            "name": "Lumentum",
+            "market": "us",
+            "pct": 3.0,
+            "basisPrice": 770.97,
+            "currentPrice": 873.6,
+            "returnPct": 13.31
+      },
+      {
+            "ticker": "NASDAQ:GOOGL",
+            "name": "Alphabet",
+            "market": "us",
+            "pct": 2.0,
+            "basisPrice": null,
+            "currentPrice": 339.32,
+            "returnPct": 0
+      }
+];
+    // kr 먼저 / us 뒤, 각 그룹 수익률 내림차순
+    stockReturns.sort((a, b) => {
+      if (a.market !== b.market) return a.market === 'kr' ? -1 : 1;
+      return b.returnPct - a.returnPct;
+    });
+    const lastKR_sr = stockReturns.map(s => s.market).lastIndexOf('kr');
+
+    const srOverlay = {
+      id: 'srOverlay',
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const meta = chart.getDatasetMeta(0);
+        const area = chart.chartArea;
+        if (!meta || !meta.data.length) return;
+        // 중앙 점선
+        const lb = meta.data[lastKR_sr], rb = meta.data[lastKR_sr + 1];
+        if (lb && rb) {
+          const dx = (lb.x + rb.x) / 2;
+          ctx.save();
+          ctx.strokeStyle = '#4b5563'; ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
+          ctx.beginPath(); ctx.moveTo(dx, area.top); ctx.lineTo(dx, area.bottom); ctx.stroke();
+          ctx.restore();
+        }
+      }
+    };
+
+    const srCtx = document.getElementById('stockReturnChart').getContext('2d');
+    new Chart(srCtx, {
+      type: 'bar',
+      data: {
+        labels: stockReturns.map(s => s.name),
+        datasets: [{
+          label: '수익률',
+          data: stockReturns.map(s => s.returnPct),
+          backgroundColor: stockReturns.map(s =>
+            s.returnPct >= 0
+              ? (s.market === 'kr' ? '#e57373' : '#7cc88a')
+              : (s.market === 'kr' ? '#a04545' : '#4a7a52')
+          ),
+          borderRadius: 3, maxBarThickness: 45, categoryPercentage: 0.80, barPercentage: 1.0
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        layout: { padding: { top: 30, right: 10, left: 6, bottom: 6 } },
+        plugins: {
+          legend: { display: false },
+          datalabels: {
+            color: '#e4e7ef', anchor: 'end',
+            align: ctx => ctx.raw >= 0 ? 'top' : 'bottom', offset: 2,
+            font: { size: 10, weight: '700' },
+            formatter: v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%'
+          },
+          tooltip: {
+            backgroundColor: '#0b1424', titleColor: '#fbbf24', bodyColor: '#e4e7ef',
+            callbacks: {
+              label: c => {
+                const s = stockReturns[c.dataIndex];
+                const arr = [];
+                arr.push('수익률: ' + (s.returnPct >= 0 ? '+' : '') + s.returnPct.toFixed(2) + '%');
+                if (s.basisPrice) arr.push('기준가: ' + s.basisPrice.toLocaleString());
+                if (s.currentPrice) arr.push('현재가: ' + s.currentPrice.toLocaleString());
+                arr.push('비중: ' + s.pct.toFixed(1) + '%');
+                return arr;
+              }
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { color: '#b8c5dc', font: { size: 10 }, maxRotation: 45, minRotation: 45, autoSkip: false }, grid: { display: false } },
+          y: { ticks: { color: '#6b7280', callback: v => (v >= 0 ? '+' : '') + v + '%' }, grid: { color: '#1e2a44' } }
+        }
+      },
+      plugins: [srOverlay]
+    });
+
+    document.getElementById('stockReturnTitle').textContent =
+      `종목별 현재 수익률 (${todayLabel} 기준, ${stockReturns.length}종목)`;
+
+  } catch (e) {
+    document.getElementById('err').innerHTML =
+      '<div style="color:#ef4444;padding:12px;border:1px solid #ef4444;border-radius:8px;background:rgba(239,68,68,0.08);">' +
+      '⚠️ 차트 로드 중 오류: ' + (e.message || e) + '</div>';
+    console.error(e);
+  }
+});
+</script>
+</body>
+</html>
