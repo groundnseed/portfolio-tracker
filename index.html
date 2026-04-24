@@ -38,7 +38,7 @@
   <div class="sub" id="subLine">2026 봄학기 · 3/10 ~ 4/23 · 31개 변동 · 확장포폴 제외</div>
 
   <div class="card today">
-    <div class="card-title">📅 오늘 매수 예정 · <span id="todayDate"></span></div>
+    <div class="card-title">📅 마지막 변동 · <span id="todayDate"></span></div>
     <div id="todayList"></div>
   </div>
 
@@ -78,8 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const now = new Date();
     const kstNow = new Date(now.getTime() + (now.getTimezoneOffset() + 9*60) * 60000);
     const todayLabel = (kstNow.getMonth() + 1) + '/' + kstNow.getDate();
-    document.getElementById('todayDate').textContent =
-      todayLabel + ' (' + ['일','월','화','수','목','금','토'][kstNow.getDay()] + ')';
+    // todayDate는 아래에서 "마지막 변동 tradeDate" 기준으로 덮어씀
 
     // ─── 종목별 보유 (4/23 반영) · KR 먼저, US 뒤 ───
     // delta: +N 또는 -N (%p 변화량), today:true → 오늘 거래
@@ -116,9 +115,18 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('subLine').textContent =
       `2026 봄학기 · 3/10 ~ ${todayLabel} · 확장포폴 제외 · 총 ${grandTotal.toFixed(1)}% (🇰🇷 ${krTotal.toFixed(1)}% + 🇺🇲 ${usTotal.toFixed(1)}%)`;
 
-    // ─── 오늘 매수 예정 카드 ───
+    // ─── 마지막 변동 카드 (가장 최근 tradeDate 기준) ───
     const todayListEl = document.getElementById('todayList');
-    const todayStocks = holdings.filter(h => h.tradeDate === todayLabel);
+    const datesWithTrades = [...new Set(holdings.filter(h => h.tradeDate).map(h => h.tradeDate))]
+      .sort((a,b) => {
+        const [am,ad] = a.split('/').map(Number);
+        const [bm,bd] = b.split('/').map(Number);
+        return (bm*100+bd) - (am*100+ad);
+      });
+    const lastTradeDate = datesWithTrades[0] || todayLabel;
+    // "📅 마지막 변동 · {lastTradeDate}" 으로 제목 업데이트
+    document.getElementById('todayDate').textContent = lastTradeDate;
+    const todayStocks = holdings.filter(h => h.tradeDate === lastTradeDate);
     if (todayStocks.length > 0) {
       todayStocks.forEach(s => {
         const flag = s.market === 'kr' ? '🇰🇷' : '🇺🇲';
@@ -133,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
         todayListEl.appendChild(row);
       });
     } else {
-      todayListEl.innerHTML = '<div class="no-trade">오늘 매수 예정 종목 없음 — 편한 하루 되세요 ☕</div>';
+      todayListEl.innerHTML = '<div class="no-trade">최근 변동 기록 없음 — 편한 하루 되세요 ☕</div>';
     }
 
     // ─── 비중 변화 이력 (callout: 주요 이벤트) ───
@@ -164,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
       { date:'4/19', kr:42.0, us:38.0, total:80.0 },
       { date:'4/21', kr:46.0, us:38.0, total:84.0, callout:{ text:'미세조정시작' } },
       { date:'4/22', kr:50.5, us:40.0, total:90.5 },
-      { date:'4/23', kr:52.5, us:40.0, total:92.5, callout:{ text:'오늘\nAVGO/CAT +1%p\nLS Elec +1%p', targetDate: '4/3', targetY: 85, pinned: true } }
+      { date:'4/23', kr:52.5, us:40.0, total:92.5, callout:{ text:'4/23\nAVGO/CAT +1%p\nLS Elec +1%p', targetDate: '4/3', targetY: 85, pinned: true } }
     ];
 
     // ═══════════════════════════════════════════════════
@@ -1012,17 +1020,4 @@ document.addEventListener('DOMContentLoaded', function() {
       plugins: [srOverlay]
     });
 
-    document.getElementById('stockReturnTitle').textContent =
-      `종목별 현재 수익률 (${todayLabel}, ${stockReturns.length}종목)`;
-
-  } catch (e) {
-    document.getElementById('err').innerHTML =
-      '<div style="color:#ef4444;padding:12px;border:1px solid #ef4444;border-radius:8px;background:rgba(239,68,68,0.08);">' +
-      '⚠️ 차트 로드 중 오류: ' + (e.message || e) + '</div>';
-    console.error(e);
-  }
-});
-</script>
-</body>
-</html>
-   
+    document.getElementById('sto
