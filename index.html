@@ -1020,4 +1020,16 @@ document.addEventListener('DOMContentLoaded', function() {
       plugins: [srOverlay]
     });
 
-    document.getElementById('sto
+    document.getElementById('stockReturnTitle').textContent =
+      `종목별 현재 수익률 (${todayLabel}, ${stockReturns.length}종목)`;
+
+  } catch (e) {
+    document.getElementById('err').innerHTML =
+      '<div style="color:#ef4444;padding:12px;border:1px solid #ef4444;border-radius:8px;background:rgba(239,68,68,0.08);">' +
+      '⚠️ 차트 로드 중 오류: ' + (e.message || e) + '</div>';
+    console.error(e);
+  }
+});
+</script>
+</body>
+</html>
