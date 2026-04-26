@@ -1,0 +1,38 @@
+name: Update KR stock prices
+
+on:
+  schedule:
+    # 한국 장 종료 (15:30 KST) 후 30분 버퍼: KST 16:00 = UTC 07:00
+    - cron: '0 7 * * 1-5'
+  workflow_dispatch:  # 수동 실행 가능
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Update prices
+        run: python scripts/update_prices.py --market kr
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet; then
+            echo "변경 없음 (휴장일 또는 가격 변동 없음)"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          KST_DATE=$(TZ=Asia/Seoul date +%Y-%m-%d)
+          git add index.html
+          git commit -m "data: KR 종목 현재가 업데이트 (장마감 ${KST_DATE})"
+          git push

@@ -1,0 +1,40 @@
+name: Update US stock prices
+
+on:
+  schedule:
+    # 미국 장 종료 (16:00 ET = 21:00 UTC EDT / 21:00 UTC EST) 후 30분 버퍼
+    # EDT 기준 21:30 UTC = 17:30 ET = 06:30 KST 익일
+    # EST 기준 21:30 UTC = 16:30 ET = 06:30 KST 익일
+    - cron: '30 21 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Update prices
+        run: python scripts/update_prices.py --market us
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet; then
+            echo "변경 없음 (휴장일 또는 가격 변동 없음)"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          ET_DATE=$(TZ=America/New_York date +%Y-%m-%d)
+          git add index.html
+          git commit -m "data: US 종목 현재가 업데이트 (장마감 ${ET_DATE} ET)"
+          git push
