@@ -775,17 +775,17 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
     scene: {
       xaxis: {
         title: '날짜', tickvals: tickVals, ticktext: tickText,
-        backgroundcolor: '#05080f', gridcolor: '#16203a',
+        backgroundcolor: '#05080f', gridcolor: 'rgba(0,0,0,0)', showgrid: false,
         zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc'
       },
       yaxis: {
         title: '보유원가 (KRW, log)', type: 'log',
-        backgroundcolor: '#05080f', gridcolor: '#16203a',
+        backgroundcolor: '#05080f', gridcolor: 'rgba(0,0,0,0)', showgrid: false,
         zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc'
       },
       zaxis: {
         title: '수익률 (%)',
-        backgroundcolor: '#05080f', gridcolor: '#16203a',
+        backgroundcolor: '#05080f', gridcolor: 'rgba(0,0,0,0)', showgrid: false,
         zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc'
       },
       camera: { eye: { x: -1.5, y: -1.6, z: 1.0 } },
