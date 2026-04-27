@@ -176,6 +176,12 @@ trades.forEach(t => {
   s.events.push({ x: t.date, y: tradeAmount, side: t.side, qty: t.qty, price: t.price });
 });
 
+// 날짜 문자열을 timestamp (ms)로 변환 — Chart.js time scale용
+Object.values(stockState).forEach(s => {
+  s.points.forEach(p => p.x = new Date(p.x).getTime());
+  s.events.forEach(e => e.x = new Date(e.x).getTime());
+});
+
 // ─── 종목 색상 팔레트 ───
 const palette = [
   '#e91e63','#2196f3','#4caf50','#ff9800','#9c27b0',
@@ -321,13 +327,12 @@ const chart = new Chart(ctx, {
   options: {
     responsive: true,
     maintainAspectRatio: false,
-    parsing: false,
     interaction: { mode: 'nearest', axis: 'xy', intersect: false },
     plugins: {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          title: items => items[0]?.raw?.x ? items[0].raw.x : '',
+          title: items => items[0]?.raw?.x ? new Date(items[0].raw.x).toISOString().slice(0,10) : '',
           label: ctx => {
             const ds = ctx.dataset;
             const r = ctx.raw;
