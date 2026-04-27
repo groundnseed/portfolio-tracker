@@ -74,9 +74,9 @@
   </div>
 
   <div class="chart-card" style="margin-top:18px;">
-    <div style="font-size:14px; font-weight:600; margin-bottom:4px; color:#fbbf24;">📐 3D 분포 (비중 × 수익률 × 평가금액)</div>
-    <div style="font-size:12px; color:#b8c5dc; margin-bottom:12px;">드래그 = 회전 · 휠 = 줌 · X=비중(%) · Y=수익률(%) · Z=평가금액 (log scale). 버블 크기 = 평가금액</div>
-    <div id="threeDChart" style="width:100%; height:600px;"></div>
+    <div style="font-size:14px; font-weight:600; margin-bottom:4px; color:#fbbf24;">📐 3D 선그래프 (시간 × 보유원가 × 수익률)</div>
+    <div style="font-size:12px; color:#b8c5dc; margin-bottom:12px;">드래그 = 회전 · 휠 = 줌 · X=날짜 · Y=보유원가(KRW, log) · Z=수익률(%). 각 선이 수익률 높이에 떠 있음 (위로 갈수록 수익↑)</div>
+    <div id="threeDChart" style="width:100%; height:680px;"></div>
   </div>
 </div>
 
@@ -648,52 +648,135 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
   }]
 });
 
-// ─── 📐 3D 차트 (Plotly) ───
-(function build3D() {
+// ─── 📐 3D 선그래프 (시간 × 보유원가 × 수익률) ───
+(function build3DLines() {
   if (typeof Plotly === 'undefined') {
     const el = document.getElementById('threeDChart');
     if (el) el.innerHTML = '<div style="padding:20px;color:#e57373;">Plotly 로드 실패</div>';
     return;
   }
-  const stocks = portfolioSnapshot.slice().sort((a,b) => b.value - a.value);
-  const trace = {
-    x: stocks.map(s => s.weight),
-    y: stocks.map(s => s.ret),
-    z: stocks.map(s => s.value),
-    mode: 'markers+text',
-    type: 'scatter3d',
-    marker: {
-      size: stocks.map(s => Math.max(8, Math.sqrt(s.value/totalValue) * 60)),
-      color: stocks.map(s => returnColor(s.ret)),
-      opacity: 0.85,
-      line: { color: '#05080f', width: 1 }
-    },
-    text: stocks.map(s => s.weight > 1.5 ? s.name : ''),
-    textposition: 'top center',
-    textfont: { color: '#e4e7ef', size: 10, family: 'Noto Sans KR, sans-serif' },
-    hovertext: stocks.map(s =>
-      `<b>${s.name}</b><br>비중: ${s.weight.toFixed(2)}%<br>수익률: ${s.ret >= 0 ? '+' : ''}${s.ret.toFixed(2)}%<br>평가금액: ${s.value.toLocaleString()}원`
-    ),
-    hoverinfo: 'text'
+  // 시간을 "3/10부터 일수"로 변환 (Plotly 3D는 time scale 미지원)
+  const baseDate = new Date('2026-03-10').getTime();
+  const dayOffset = ts => (ts - baseDate) / (86400000);
+  const dayLabel = d => {
+    const dt = new Date(baseDate + d*86400000);
+    return (dt.getMonth()+1) + '/' + dt.getDate();
   };
+
+  const traces = [];
+  // 각 종목별 선 + 매수/매도 마커
+  Object.entries(stockState).forEach(([name, state]) => {
+    if (state.points.length === 0) return;
+    const snap = heldSnapshot[name];
+    const ret = snap ? snap.ret : 0;  // 매도된 종목은 0
+    const color = stockColor[name];
+
+    // 선 (Y는 보유원가, Z는 수익률)
+    traces.push({
+      x: state.points.map(p => dayOffset(p.x)),
+      y: state.points.map(p => Math.max(p.y, 100)),  // log scale: 0 방지
+      z: state.points.map(p => ret),
+      mode: 'lines',
+      type: 'scatter3d',
+      name: name,
+      line: { color: color, width: 4 },
+      legendgroup: name,
+      hovertemplate: `<b>${name}</b><br>날짜: %{customdata}<br>보유원가: %{y:,.0f}원<br>수익률: ${ret >= 0 ? '+' : ''}${ret.toFixed(2)}%<extra></extra>`,
+      customdata: state.points.map(p => dayLabel(dayOffset(p.x)))
+    });
+
+    // 매수/매도 마커
+    if (state.events.length > 0) {
+      const buys = state.events.filter(e => e.side === 'buy');
+      const sells = state.events.filter(e => e.side === 'sell');
+      if (buys.length > 0) {
+        traces.push({
+          x: buys.map(e => dayOffset(e.x)),
+          y: buys.map(e => Math.max(e.y, 100)),
+          z: buys.map(e => ret),
+          mode: 'markers',
+          type: 'scatter3d',
+          name: name + ' 매수',
+          showlegend: false,
+          legendgroup: name,
+          marker: {
+            symbol: 'diamond',
+            size: 5,
+            color: '#e53935',
+            line: { color: '#fff', width: 0.5 }
+          },
+          hovertemplate: `<b>${name} 매수 ▲</b><br>%{customdata}<extra></extra>`,
+          customdata: buys.map(e => `${dayLabel(dayOffset(e.x))} · ${e.qty}주 × ${e.price.toLocaleString()}원`)
+        });
+      }
+      if (sells.length > 0) {
+        traces.push({
+          x: sells.map(e => dayOffset(e.x)),
+          y: sells.map(e => Math.max(e.y, 100)),
+          z: sells.map(e => ret),
+          mode: 'markers',
+          type: 'scatter3d',
+          name: name + ' 매도',
+          showlegend: false,
+          legendgroup: name,
+          marker: {
+            symbol: 'diamond-open',
+            size: 5,
+            color: '#1e88e5',
+            line: { color: '#1e88e5', width: 1.2 }
+          },
+          hovertemplate: `<b>${name} 매도 ▼</b><br>%{customdata}<extra></extra>`,
+          customdata: sells.map(e => `${dayLabel(dayOffset(e.x))} · ${e.qty}주 × ${e.price.toLocaleString()}원`)
+        });
+      }
+    }
+  });
+
+  // X축 tick 라벨 (3/10, 3/17, 3/24, ...)
+  const maxDays = 49;  // 약 7주
+  const tickVals = [];
+  const tickText = [];
+  for (let d = 0; d <= maxDays; d += 7) {
+    tickVals.push(d);
+    tickText.push(dayLabel(d));
+  }
+
   const layout = {
     paper_bgcolor: '#0a1020',
     plot_bgcolor: '#0a1020',
     font: { color: '#b8c5dc', family: 'Noto Sans KR, sans-serif', size: 11 },
     margin: { l: 0, r: 0, t: 8, b: 0 },
+    showlegend: true,
+    legend: {
+      bgcolor: 'rgba(10,16,32,0.7)',
+      bordercolor: '#16203a',
+      borderwidth: 1,
+      font: { color: '#e4e7ef', size: 10 },
+      x: 1.02, y: 0.95
+    },
     scene: {
-      xaxis: { title: '비중 (%)', backgroundcolor: '#05080f', gridcolor: '#16203a',
-               zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc' },
-      yaxis: { title: '수익률 (%)', backgroundcolor: '#05080f', gridcolor: '#16203a',
-               zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc' },
-      zaxis: { title: '평가금액 (KRW)', type: 'log',
-               backgroundcolor: '#05080f', gridcolor: '#16203a',
-               zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc' },
-      camera: { eye: { x: 1.6, y: 1.6, z: 1.0 } },
+      xaxis: {
+        title: '날짜', tickvals: tickVals, ticktext: tickText,
+        backgroundcolor: '#05080f', gridcolor: '#16203a',
+        zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc'
+      },
+      yaxis: {
+        title: '보유원가 (KRW, log)', type: 'log',
+        backgroundcolor: '#05080f', gridcolor: '#16203a',
+        zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc'
+      },
+      zaxis: {
+        title: '수익률 (%)',
+        backgroundcolor: '#05080f', gridcolor: '#16203a',
+        zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc'
+      },
+      camera: { eye: { x: -1.5, y: -1.6, z: 1.0 } },
+      aspectmode: 'manual',
+      aspectratio: { x: 1.6, y: 1.0, z: 0.9 },
       bgcolor: '#0a1020'
     }
   };
-  Plotly.newPlot('threeDChart', [trace], layout, {
+  Plotly.newPlot('threeDChart', traces, layout, {
     displaylogo: false, responsive: true,
     modeBarButtonsToRemove: ['lasso2d','select2d']
   });
