@@ -173,7 +173,7 @@ trades.forEach(t => {
     }
   }
   s.points.push({ x: t.date, y: s.costBasis });
-  s.events.push({ x: t.date, y: tradeAmount, side: t.side, qty: t.qty, price: t.price });
+  s.events.push({ x: t.date, y: s.costBasis, side: t.side, qty: t.qty, price: t.price, tradeAmount: tradeAmount });
 });
 
 // 날짜 문자열을 timestamp (ms)로 변환 — Chart.js time scale용
@@ -339,7 +339,7 @@ const chart = new Chart(ctx, {
             const name = ds.label.replace(' (원가)','');
             if (ds._isEvents) {
               const sideStr = r.side === 'buy' ? '매수 ▲' : '매도 ▼';
-              return `${name} ${sideStr}: ${r.qty.toLocaleString()}주 × ${r.price.toLocaleString()}원 = ${r.y.toLocaleString()}원`;
+              return `${name} ${sideStr}: ${r.qty.toLocaleString()}주 × ${r.price.toLocaleString()}원 = ${r.tradeAmount.toLocaleString()}원`;
             } else if (ds._isLine) {
               return `${name} 보유원가: ${Math.round(r.y).toLocaleString()}원`;
             }
