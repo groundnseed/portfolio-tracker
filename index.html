@@ -35,7 +35,7 @@
 <body>
 <div class="wrap">
   <h1>Jin's Portfolio</h1>
-  <div class="sub" id="subLine">2026 봄학기 · 3/10 ~ 4/26 · 32개 변동 · 확장포폴 제외</div>
+  <div class="sub" id="subLine">2026 봄학기 · 3/10 ~ 4/27 · 33개 변동 · 확장포폴 제외</div>
 
   <div class="card today">
     <div class="card-title">📅 마지막 변동 · <span id="todayDate"></span></div>
@@ -43,12 +43,12 @@
   </div>
 
   <div class="card">
-    <div class="card-title" id="holdingsTitle">Jin's Portfolio 종목별 비중 (4/26 기준, 총 93.5%)</div>
+    <div class="card-title" id="holdingsTitle">Jin's Portfolio 종목별 비중 (4/27 기준, 총 94.5%)</div>
     <div class="chart-scroll"><div class="chart-box"><canvas id="holdingsChart"></canvas></div></div>
   </div>
 
   <div class="card">
-    <div class="card-title">Jin's Portfolio 비중 변화 (3/10 신학기 → 4/26)</div>
+    <div class="card-title">Jin's Portfolio 비중 변화 (3/10 신학기 → 4/27)</div>
     <div class="chart-box-trend"><canvas id="trendChart"></canvas></div>
   </div>
 
@@ -61,7 +61,7 @@
   </div>
 
   <div class="card">
-    <div class="card-title" id="stockReturnTitle">종목별 현재 수익률 (4/26 기준)</div>
+    <div class="card-title" id="stockReturnTitle">종목별 현재 수익률 (4/27 기준)</div>
     <div class="chart-scroll"><div class="chart-box"><canvas id="stockReturnChart"></canvas></div></div>
   </div>
 
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', function() {
       { name:'KODEX200',   market:'kr', pct:10.0 },
       { name:'삼성전기',    market:'kr', pct:6.0 },
       { name:'OCI',        market:'kr', pct:5.0 },
-      { name:'SK하이닉스',  market:'kr', pct:4.5 },
+      { name:'SK하이닉스',  market:'kr', pct:5.5, tradeDate:'4/27', delta:1, note:'4.5→5.5 · 4/27 퇴근길' },
       { name:'삼성전자',    market:'kr', pct:4.0 },
       { name:'KB금융',     market:'kr', pct:4.0 },
       { name:'미래에셋',    market:'kr', pct:4.0 },
@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // 🇺🇲 US (내림차순 정렬)
       { name:'IWM',        market:'us', pct:6.0 },
       { name:'AVGO',       market:'us', pct:5.0 },
-      { name:'INTC',       market:'us', pct:6.0, tradeDate:'4/26', delta:1, note:'5→6 · 4/26 주말' },
+      { name:'INTC',       market:'us', pct:6.0 },
       { name:'LRCX',       market:'us', pct:4.0 },
       { name:'VRT',        market:'us', pct:4.0 },
       { name:'CITY',       market:'us', pct:4.0 },
@@ -173,7 +173,8 @@ document.addEventListener('DOMContentLoaded', function() {
       { date:'4/21', kr:46.0, us:38.0, total:84.0, callout:{ text:'미세조정시작' } },
       { date:'4/22', kr:50.5, us:40.0, total:90.5 },
       { date:'4/23', kr:52.5, us:40.0, total:92.5, callout:{ text:'4/23\nAVGO/CAT +1%p\nLS Elec +1%p', targetDate: '4/3', targetY: 85 } },
-      { date:'4/26', kr:52.5, us:41.0, total:93.5, callout:{ text:'4/26\nINTC +1%p (5→6)\n주말 매수', targetDate: '4/5', targetY: 90, pinned: true } }
+      { date:'4/26', kr:52.5, us:41.0, total:93.5, callout:{ text:'4/26\nINTC +1%p (5→6)\n주말 매수', targetDate: '4/5', targetY: 90 } },
+      { date:'4/27', kr:53.5, us:41.0, total:94.5, callout:{ text:'4/27\nSK하이닉스 +1%p\n(4.5→5.5) 퇴근길', targetDate: '4/7', targetY: 92, pinned: true } }
     ];
 
     // ═══════════════════════════════════════════════════
@@ -787,7 +788,7 @@ document.addEventListener('DOMContentLoaded', function() {
             "ticker": "KRX:000660",
             "name": "SK하이닉스",
             "market": "kr",
-            "pct": 4.5,
+            "pct": 5.5,
             "basisPrice": 1053700.0,
             "currentPrice": 1222000.0,
             "returnPct": 15.97
