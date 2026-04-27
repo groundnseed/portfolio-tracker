@@ -165,7 +165,7 @@
 <body>
 <div class="wrap">
   <div class="header" id="header">
-    스냅샷 (2026-04-27) · 24개 종목 · 2026-03-10 ~ 2026-04-27 · 71건 거래 — 새 거래 추가 시 챗에 "한국투자 차트 새로고침"이라고 요청해 주세요
+    스냅샷 (대기중) · 0개 종목 · 데이터 없음 · 0건 거래 — 새 거래 추가 시 챗에 "한국투자 차트 새로고침"이라고 요청해 주세요
   </div>
   <div class="legend">
     <strong style="color: var(--buy)">▲ 매수</strong>
@@ -212,121 +212,10 @@
 
 <script>
 // ─── 거래 내역 (55건, 한국투자증권 Smart+) ───
-const trades = [
-  // 3/10
-  { date:'2026-03-10', stock:'알지노믹스', side:'sell', qty:11, price:158500 },
-  { date:'2026-03-10', stock:'대덕전자',  side:'sell', qty:40, price:61200 },
-  { date:'2026-03-10', stock:'후성',      side:'sell', qty:2,  price:7280 },
-  { date:'2026-03-10', stock:'한국항공우주', side:'buy', qty:6, price:182000 },
-  { date:'2026-03-10', stock:'삼성전자',   side:'buy', qty:11, price:184300 },
-  { date:'2026-03-10', stock:'현대건설',   side:'buy', qty:7,  price:149600 },
-  // 3/13
-  { date:'2026-03-13', stock:'현대건설',   side:'buy', qty:4,  price:154150 },
-  // 3/17
-  { date:'2026-03-17', stock:'LG전자',     side:'sell', qty:5, price:112700 },
-  // 3/18
-  { date:'2026-03-18', stock:'현대건설',   side:'buy', qty:2,  price:160500 },
-  // 3/19
-  { date:'2026-03-19', stock:'현대건설',   side:'buy', qty:13, price:160961 },
-  { date:'2026-03-19', stock:'알지노믹스', side:'sell', qty:5, price:185300 },
-  // 3/20
-  { date:'2026-03-20', stock:'제닉',       side:'sell', qty:50, price:24850 },
-  // 3/23
-  { date:'2026-03-23', stock:'현대건설',   side:'buy', qty:6,  price:170150 },
-  { date:'2026-03-23', stock:'제닉',       side:'sell', qty:25, price:23500 },
-  // 3/24
-  { date:'2026-03-24', stock:'현대건설',   side:'buy', qty:7,  price:168971 },
-  { date:'2026-03-24', stock:'한국항공우주', side:'buy', qty:1, price:186700 },
-  { date:'2026-03-24', stock:'현대모비스', side:'sell', qty:2, price:401000 },
-  // 4/2
-  { date:'2026-04-02', stock:'알지노믹스', side:'sell', qty:5, price:199200 },
-  // 4/3
-  { date:'2026-04-03', stock:'현대건설',   side:'buy', qty:10, price:155280 },
-  { date:'2026-04-03', stock:'현대차',     side:'buy', qty:2,  price:485000 },
-  { date:'2026-04-03', stock:'한국항공우주', side:'buy', qty:6, price:179950 },
-  { date:'2026-04-03', stock:'쏠리드',     side:'buy', qty:40, price:14802 },
-  { date:'2026-04-03', stock:'LIG넥스원',  side:'buy', qty:3,  price:793000 },
-  { date:'2026-04-03', stock:'에치에프알', side:'buy', qty:153, price:33978 },
-  { date:'2026-04-03', stock:'현대모비스', side:'sell', qty:18, price:401166 },
-  { date:'2026-04-03', stock:'LG전자',     side:'sell', qty:7, price:112800 },
-  { date:'2026-04-03', stock:'한화엔진',   side:'sell', qty:41, price:44750 },
-  { date:'2026-04-03', stock:'HD현대중공업', side:'sell', qty:2, price:449875 },
-  // 4/6
-  { date:'2026-04-06', stock:'대한광통신', side:'buy', qty:3, price:10326 },
-  { date:'2026-04-06', stock:'대한광통신', side:'sell', qty:5, price:9860 },
-  // 4/7
-  { date:'2026-04-07', stock:'현대건설',   side:'buy', qty:7,  price:153400 },
-  { date:'2026-04-07', stock:'삼성전자',   side:'buy', qty:6,  price:184200 },
-  { date:'2026-04-07', stock:'대한광통신', side:'buy', qty:20, price:11660 },
-  { date:'2026-04-07', stock:'쏠리드',     side:'buy', qty:40, price:16300 },
-  { date:'2026-04-07', stock:'LIG넥스원',  side:'buy', qty:4,  price:826250 },
-  { date:'2026-04-07', stock:'신세계',     side:'sell', qty:8, price:302500 },
-  { date:'2026-04-07', stock:'현대모비스', side:'sell', qty:15, price:393600 },
-  { date:'2026-04-07', stock:'LG전자',     side:'sell', qty:8, price:111000 },
-  // 4/9
-  { date:'2026-04-09', stock:'삼성전자',   side:'buy', qty:12, price:201500 },
-  { date:'2026-04-09', stock:'상신이디피', side:'buy', qty:10, price:23700 },
-  { date:'2026-04-09', stock:'더블유씨피', side:'buy', qty:40, price:16170 },
-  { date:'2026-04-09', stock:'대한광통신', side:'sell', qty:20, price:12700 },
-  { date:'2026-04-09', stock:'제닉',       side:'sell', qty:25, price:27280 },
-  // 4/10
-  { date:'2026-04-10', stock:'상신이디피', side:'buy', qty:20, price:24050 },
-  { date:'2026-04-10', stock:'에치에프알', side:'buy', qty:5,  price:30150 },
-  // 4/13
-  { date:'2026-04-13', stock:'에치에프알', side:'buy', qty:7,  price:27900 },
-  // 4/15
-  { date:'2026-04-15', stock:'알지노믹스', side:'buy', qty:1,  price:199900 },
-  // 4/21
-  { date:'2026-04-21', stock:'PLUS 코스닥150액티브', side:'buy', qty:40, price:10982 },
-  { date:'2026-04-21', stock:'KODEX 코스닥150레버리지', side:'sell', qty:100, price:16030 },
-  // 4/24
-  { date:'2026-04-24', stock:'와이지-원', side:'buy', qty:1, price:13750 },
-  { date:'2026-04-24', stock:'인텔리안테크', side:'buy', qty:15, price:135873 },
-  { date:'2026-04-24', stock:'현대차',     side:'sell', qty:4, price:533000 },
-  { date:'2026-04-24', stock:'와이지-원', side:'sell', qty:1, price:13530 },
-  // 4/24 추가 거래 (카카오톡 체결 알림)
-  { date:'2026-04-24', stock:'에스피지',     side:'buy',  qty:9,  price:117200 },
-  { date:'2026-04-24', stock:'한화엔진',     side:'buy',  qty:5,  price:75400 },
-  { date:'2026-04-24', stock:'알지노믹스',   side:'buy',  qty:1,  price:185700 },
-  { date:'2026-04-24', stock:'한국항공우주', side:'buy',  qty:6,  price:171500 },
-  { date:'2026-04-24', stock:'인텔리안테크', side:'buy',  qty:9,  price:130300 },
-  { date:'2026-04-24', stock:'인텔리안테크', side:'buy',  qty:9,  price:130200 },
-  { date:'2026-04-24', stock:'인텔리안테크', side:'buy',  qty:9,  price:130000 },
-  { date:'2026-04-24', stock:'에스피지',     side:'sell', qty:9,  price:118300 },
-  { date:'2026-04-24', stock:'한화엔진',     side:'sell', qty:14, price:75700 },
-  { date:'2026-04-24', stock:'쏠리드',       side:'sell', qty:80, price:16430 },
-  { date:'2026-04-24', stock:'현대모비스',   side:'buy',  qty:3,  price:427000 },
-  // 4/27
-  { date:'2026-04-27', stock:'인텔리안테크', side:'buy', qty:8, price:134600 },
-  { date:'2026-04-27', stock:'에치에프알', side:'sell', qty:35, price:29400 },
-  // 4/27 추가 거래 (카카오톡 체결 알림)
-  { date:'2026-04-27', stock:'인텔리안테크', side:'buy',  qty:1,  price:129500 },
-  { date:'2026-04-27', stock:'인텔리안테크', side:'buy',  qty:1,  price:129500 },
-  { date:'2026-04-27', stock:'더블유씨피',   side:'sell', qty:40, price:18000 },
-  { date:'2026-04-27', stock:'OCI홀딩스',    side:'buy',  qty:1,  price:367500 },
-  { date:'2026-04-27', stock:'인텔리안테크', side:'buy',  qty:3,  price:140200 }
-];
+const trades = [];
 
-// 4/27 기준 보유중 종목 (스냅샷)
-const heldSnapshot = {
-  '에치에프알': { shares:130, value:3503500, ret:-19.80 },
-  '알지노믹스': { shares:3,   value:593700,  ret:10.64 },
-  '상신이디피': { shares:30,  value:781500,  ret:8.84 },
-  'PLUS 코스닥150액티브': { shares:40, value:469000, ret:6.76 },
-  '인텔리안테크': { shares:37, value:5183700, ret:5.41 },
-  '현대차':       { shares:8,  value:4208000, ret:1.56 },
-  'KODEX 코스닥150레버리지': { shares:120, value:2157000, ret:-0.72 },
-  '한국항공우주': { shares:22, value:3775200, ret:-7.54 },
-  'SK하이닉스':   { shares:40, value:51920000,ret:98.43, noTrades:true },
-  '에스피지':     { shares:234,value:31660200,ret:82.32, noTrades:true },
-  '한화엔진':     { shares:69, value:6113400, ret:45.77 },
-  '삼성전자':     { shares:72, value:16128000,ret:23.92 },
-  '현대건설':     { shares:118,value:20296000,ret:22.83 },
-  'LIG넥스원':    { shares:7,  value:6664000, ret:17.24 },
-  'HD현대중공업': { shares:4,  value:2708000, ret:16.06 },
-  '현대모비스':   { shares:23, value:9982000, ret:11.76 },
-  'OCI홀딩스':    { shares:1,  value:376000,  ret:2.31 }
-};
+// 보유종목 스냅샷 — 비어있음 (새로 받을 예정)
+const heldSnapshot = {};
 const heldStocks = new Set(Object.keys(heldSnapshot));
 
 // ─── 종목별 보유원가 계산 ───
@@ -740,25 +629,7 @@ function updateChart() {
 }
 
 // ─── 옵션 A: 비중 vs 수익률 버블 차트 ───
-const portfolioSnapshot = [
-  { name:'SK하이닉스',  value:51920000, ret:98.43 },
-  { name:'에스피지',    value:31660200, ret:82.32 },
-  { name:'현대건설',    value:20296000, ret:22.83 },
-  { name:'삼성전자',    value:16128000, ret:23.92 },
-  { name:'현대모비스',  value:9982000,  ret:11.76 },
-  { name:'LIG넥스원',   value:6664000,  ret:17.24 },
-  { name:'한화엔진',    value:6113400,  ret:45.77 },
-  { name:'인텔리안테크',value:5183700,  ret:5.41 },
-  { name:'현대차',      value:4208000,  ret:1.56 },
-  { name:'한국항공우주',value:3775200,  ret:-7.54 },
-  { name:'에치에프알',  value:3503500,  ret:-19.80 },
-  { name:'HD현대중공업',value:2708000,  ret:16.06 },
-  { name:'KODEX 코스닥150레버리지', value:2157000, ret:-0.72 },
-  { name:'상신이디피',  value:781500,   ret:8.84 },
-  { name:'알지노믹스',  value:593700,   ret:10.64 },
-  { name:'PLUS 코스닥150액티브', value:469000, ret:6.76 },
-  { name:'OCI홀딩스',   value:376000,   ret:2.31 }
-];
+const portfolioSnapshot = [];
 const totalValue = portfolioSnapshot.reduce((s,h)=>s+h.value, 0);
 portfolioSnapshot.forEach(h => h.weight = h.value / totalValue * 100);
 
