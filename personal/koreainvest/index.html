@@ -156,8 +156,29 @@ const trades = [
 const heldStocks = new Set([
   '에치에프알','알지노믹스','상신이디피','PLUS 코스닥150액티브','인텔리안테크',
   '현대차','KODEX 코스닥150레버리지','한국항공우주','한화엔진','삼성전자',
-  '현대건설','LIG넥스원','HD현대중공업','현대모비스'
+  '현대건설','LIG넥스원','HD현대중공업','현대모비스',
+  'SK하이닉스','에스피지','OCI홀딩스'
 ]);
+
+// ─── 3/10 이전부터 보유 (변동 없음) — 평가금액 / (1 + 수익률) = 매수원가 추정 ───
+const preExistingHoldings = [
+  { stock: 'SK하이닉스', cost: 26167353, currentValue: 51920000, ret: 98.43 },
+  { stock: '에스피지',   cost: 17365956, currentValue: 31660200, ret: 82.32 },
+  { stock: 'OCI홀딩스',  cost: 367510,   currentValue: 376000,   ret: 2.31 }
+];
+
+preExistingHoldings.forEach(h => {
+  if (!stockState[h.stock]) {
+    stockState[h.stock] = {
+      shares: 1, costBasis: h.cost,
+      lastBuyAmount: h.cost, points: [], events: [],
+      preExisting: true
+    };
+    // 3/10부터 마지막 거래일(4/27)까지 평평한 선
+    stockState[h.stock].points.push({ x: '2026-03-10', y: h.cost });
+    stockState[h.stock].points.push({ x: '2026-04-27', y: h.cost });
+  }
+});
 
 // ─── 종목별 보유 원가(running cost basis) 계산 (가중평균 기준) ───
 const stockState = {};  // { stockName: { shares, costBasis, lastBuyAmount, points: [] } }
