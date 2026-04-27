@@ -152,38 +152,97 @@ const trades = [
   { date:'2026-04-27', stock:'에치에프알', side:'sell', qty:35, price:29400 }
 ];
 
-// 4/27 기준 보유중 종목 (스냅샷 기준)
-const heldStocks = new Set([
-  '에치에프알','알지노믹스','상신이디피','PLUS 코스닥150액티브','인텔리안테크',
-  '현대차','KODEX 코스닥150레버리지','한국항공우주','한화엔진','삼성전자',
-  '현대건설','LIG넥스원','HD현대중공업','현대모비스',
-  'SK하이닉스','에스피지','OCI홀딩스'
-]);
+// 4/27 기준 보유중 종목 (스냅샷)
+const heldSnapshot = {
+  '에치에프알': { shares:130, value:3503500, ret:-19.80 },
+  '알지노믹스': { shares:3,   value:593700,  ret:10.64 },
+  '상신이디피': { shares:30,  value:781500,  ret:8.84 },
+  'PLUS 코스닥150액티브': { shares:40, value:469000, ret:6.76 },
+  '인텔리안테크': { shares:37, value:5183700, ret:5.41 },
+  '현대차':       { shares:8,  value:4208000, ret:1.56 },
+  'KODEX 코스닥150레버리지': { shares:120, value:2157000, ret:-0.72 },
+  '한국항공우주': { shares:22, value:3775200, ret:-7.54 },
+  'SK하이닉스':   { shares:40, value:51920000,ret:98.43, noTrades:true },
+  '에스피지':     { shares:234,value:31660200,ret:82.32, noTrades:true },
+  '한화엔진':     { shares:69, value:6113400, ret:45.77 },
+  '삼성전자':     { shares:72, value:16128000,ret:23.92 },
+  '현대건설':     { shares:118,value:20296000,ret:22.83 },
+  'LIG넥스원':    { shares:7,  value:6664000, ret:17.24 },
+  'HD현대중공업': { shares:4,  value:2708000, ret:16.06 },
+  '현대모비스':   { shares:23, value:9982000, ret:11.76 }
+  // OCI홀딩스는 어제 매수 — 추후 거래 데이터 추가 예정 (제외)
+};
+const heldStocks = new Set(Object.keys(heldSnapshot));
 
-// ─── 3/10 이전부터 보유 (변동 없음) — 평가금액 / (1 + 수익률) = 매수원가 추정 ───
-const preExistingHoldings = [
-  { stock: 'SK하이닉스', cost: 26167353, currentValue: 51920000, ret: 98.43 },
-  { stock: '에스피지',   cost: 17365956, currentValue: 31660200, ret: 82.32 },
-  { stock: 'OCI홀딩스',  cost: 367510,   currentValue: 376000,   ret: 2.31 }
-];
+// ─── 종목별 보유원가 계산 ───
+const stockState = {};
 
-preExistingHoldings.forEach(h => {
-  if (!stockState[h.stock]) {
-    stockState[h.stock] = {
-      shares: 1, costBasis: h.cost,
-      lastBuyAmount: h.cost, points: [], events: [],
-      preExisting: true
+// Step 1: 각 보유종목의 3/10 시작 상태 계산
+// targetEndCost = 평가금액 / (1 + 수익률/100)
+// startCost는 시뮬레이션 결과가 targetEndCost가 되도록 역산
+Object.entries(heldSnapshot).forEach(([name, snap]) => {
+  const targetEndCost = snap.value / (1 + snap.ret/100);
+  const stockTrades = trades.filter(t => t.stock === name);
+
+  if (stockTrades.length === 0) {
+    // 거래 없음 — 평평한 선
+    stockState[name] = {
+      shares: snap.shares, costBasis: targetEndCost,
+      lastBuyAmount: targetEndCost,
+      points: [{ x: '2026-03-10', y: targetEndCost }, { x: '2026-04-27', y: targetEndCost }],
+      events: [], preExisting: true
     };
-    // 3/10부터 마지막 거래일(4/27)까지 평평한 선
-    stockState[h.stock].points.push({ x: '2026-03-10', y: h.cost });
-    stockState[h.stock].points.push({ x: '2026-04-27', y: h.cost });
+    return;
   }
+
+  // 거래 있음 — startShares 계산
+  const netChange = stockTrades.reduce((s,t) => s + (t.side==='buy' ? t.qty : -t.qty), 0);
+  const startShares = snap.shares - netChange;
+
+  if (startShares <= 0) {
+    // 3/10 이전 보유 0 — 일반 시뮬레이션 (init 빈 상태)
+    stockState[name] = { shares: 0, costBasis: 0, lastBuyAmount: 0, points: [], events: [] };
+    return;
+  }
+
+  // 매도 factor + 매수 contribution 계산해서 startCost 역산
+  let runningShares = startShares;
+  const factors = [];
+  const buyAmounts = [];
+  for (const t of stockTrades) {
+    if (t.side === 'buy') {
+      factors.push(1);
+      buyAmounts.push(t.qty * t.price);
+      runningShares += t.qty;
+    } else {
+      const f = (runningShares - t.qty) / runningShares;
+      factors.push(f);
+      buyAmounts.push(0);
+      runningShares -= t.qty;
+    }
+  }
+  // F_total = 모든 매도 factor 곱
+  const F_total = factors.reduce((p,f) => p*f, 1);
+  // B = sum(buyAmount[i] * Π factors[j], j>i)
+  let B = 0, suffixF = 1;
+  for (let i = factors.length - 1; i >= 0; i--) {
+    if (i < factors.length - 1) suffixF *= factors[i+1];
+    B += buyAmounts[i] * suffixF;
+  }
+  const startCost = Math.max(0, (targetEndCost - B) / F_total);
+
+  stockState[name] = {
+    shares: startShares, costBasis: startCost,
+    lastBuyAmount: snap.value,  // 정렬용: 평가금액 큰 순
+    points: [{ x: '2026-03-10', y: startCost }],
+    events: [], preExisting: true
+  };
 });
 
-// ─── 종목별 보유 원가(running cost basis) 계산 (가중평균 기준) ───
-const stockState = {};  // { stockName: { shares, costBasis, lastBuyAmount, points: [] } }
+// Step 2: 거래 시뮬레이션 (보유종목은 startCost에서 시작, 미보유는 0에서 시작)
 trades.forEach(t => {
   if (!stockState[t.stock]) {
+    // 매도된 종목 (현재 미보유) — 0에서 시작
     stockState[t.stock] = { shares: 0, costBasis: 0, lastBuyAmount: 0, points: [], events: [] };
   }
   const s = stockState[t.stock];
@@ -193,22 +252,31 @@ trades.forEach(t => {
     s.costBasis += tradeAmount;
     s.lastBuyAmount = tradeAmount;
   } else {
-    // 가중평균 기준으로 비례 차감
     if (s.shares > 0) {
       const avgCost = s.costBasis / s.shares;
-      const reduction = avgCost * t.qty;
-      s.costBasis = Math.max(0, s.costBasis - reduction);
+      s.costBasis = Math.max(0, s.costBasis - avgCost * t.qty);
       s.shares = Math.max(0, s.shares - t.qty);
     }
   }
   s.points.push({ x: t.date, y: s.costBasis });
-  s.events.push({ x: t.date, y: tradeAmount, side: t.side, qty: t.qty, price: t.price });
+  // 세모 마커 — Y는 보유원가 (선 위에)
+  s.events.push({ x: t.date, y: s.costBasis, side: t.side, qty: t.qty, price: t.price, tradeAmount });
 });
 
-// 날짜 문자열을 timestamp (ms)로 변환 — Chart.js time scale용
+// Step 3: 보유종목인데 마지막 거래 이후 시점이 없으면 4/27까지 평평한 선 연장
+Object.entries(stockState).forEach(([name, s]) => {
+  if (heldStocks.has(name) && s.points.length > 0) {
+    const last = s.points[s.points.length - 1];
+    if (last.x !== '2026-04-27') {
+      s.points.push({ x: '2026-04-27', y: s.costBasis });
+    }
+  }
+});
+
+// Step 4: 날짜 문자열 → timestamp 변환
 Object.values(stockState).forEach(s => {
-  s.points.forEach(p => p.x = new Date(p.x).getTime());
-  s.events.forEach(e => e.x = new Date(e.x).getTime());
+  s.points.forEach(p => { if (typeof p.x === 'string') p.x = new Date(p.x).getTime(); });
+  s.events.forEach(e => { if (typeof e.x === 'string') e.x = new Date(e.x).getTime(); });
 });
 
 // ─── 종목 색상 팔레트 ───
@@ -360,7 +428,7 @@ const chart = new Chart(ctx, {
             const name = ds.label.replace(' (원가)','');
             if (ds._isEvents) {
               const sideStr = r.side === 'buy' ? '매수 ▲' : '매도 ▼';
-              return `${name} ${sideStr}: ${r.qty.toLocaleString()}주 × ${r.price.toLocaleString()}원 = ${r.y.toLocaleString()}원`;
+              return `${name} ${sideStr}: ${r.qty.toLocaleString()}주 × ${r.price.toLocaleString()}원 = ${(r.tradeAmount||0).toLocaleString()}원`;
             } else if (ds._isLine) {
               return `${name} 보유원가: ${Math.round(r.y).toLocaleString()}원`;
             }
