@@ -602,13 +602,13 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
         title: { display: true, text: '비중 (%)' },
         min: -2, max: 35,
         ticks: { color: '#6b7280' },
-        grid: { color: '#13203a' }
+        grid: { display: false }
       },
       y: {
         title: { display: true, text: '수익률 (%)' },
         min: -30, max: 110,
         ticks: { color: '#6b7280', callback: v => (v>=0?'+':'')+v+'%' },
-        grid: { color: '#13203a' }
+        grid: { display: false }
       }
     }
   },
