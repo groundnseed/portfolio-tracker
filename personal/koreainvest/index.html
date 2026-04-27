@@ -11,20 +11,20 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Noto Sans KR','Malgun Gothic',sans-serif;
-    background: #0b1220; color: #e4e7ef; padding: 16px; min-height: 100vh; font-size: 13px;
+    background: #05080f; color: #e4e7ef; padding: 16px; min-height: 100vh; font-size: 13px;
   }
   .wrap { max-width: 1400px; margin: 0 auto; }
-  .header { background: #111a2d; border: 1px solid #1e2a44; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 12px; color: #b8c5dc; }
+  .header { background: #0a1020; border: 1px solid #16203a; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 12px; color: #b8c5dc; }
   .legend { font-size: 12px; color: #b8c5dc; margin-bottom: 10px; padding: 0 4px; }
   .legend strong { margin-right: 12px; }
   .layout { display: grid; grid-template-columns: 1fr 220px; gap: 16px; }
-  .chart-card { background: #111a2d; border: 1px solid #1e2a44; border-radius: 10px; padding: 16px; }
+  .chart-card { background: #0a1020; border: 1px solid #16203a; border-radius: 10px; padding: 16px; }
   .chart-box { position: relative; height: 720px; }
-  .sidebar { background: #111a2d; border: 1px solid #1e2a44; border-radius: 10px; padding: 14px; height: fit-content; max-height: 720px; overflow-y: auto; }
+  .sidebar { background: #0a1020; border: 1px solid #16203a; border-radius: 10px; padding: 14px; height: fit-content; max-height: 720px; overflow-y: auto; }
   .filter-buttons { display: flex; gap: 4px; margin-bottom: 12px; }
   .filter-buttons button {
-    flex: 1; padding: 6px 8px; font-size: 12px; border: 1px solid #2a3a5a;
-    background: #1a2540; border-radius: 5px; cursor: pointer; color: #b8c5dc; font-family: inherit;
+    flex: 1; padding: 6px 8px; font-size: 12px; border: 1px solid #1f2c4a;
+    background: #0f1830; border-radius: 5px; cursor: pointer; color: #b8c5dc; font-family: inherit;
   }
   .filter-buttons button.active { background: #fbbf24; color: #0b1220; border-color: #fbbf24; }
   .stock-list-title { font-size: 11px; color: #8ea3c7; margin-bottom: 8px; padding: 0 2px; }
@@ -366,7 +366,7 @@ const returnLabels = {
       const tw = ctx.measureText(text).width;
       const bx = last.x + 6;
       const by = last.y - fontSize/2 - padY;
-      ctx.fillStyle = 'rgba(11, 18, 32, 0.85)';
+      ctx.fillStyle = 'rgba(5, 8, 15, 0.88)';
       ctx.strokeStyle = labelColor;
       ctx.lineWidth = 1;
       const r = 3;
@@ -570,7 +570,7 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
     datasets: [{
       data: bubbleData,
       backgroundColor: portfolioSnapshot.map(h => returnColor(h.ret)),
-      borderColor: '#0b1220',
+      borderColor: '#05080f',
       borderWidth: 1.5
     }]
   },
@@ -595,13 +595,13 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
         title: { display: true, text: '비중 (%)' },
         min: -2, max: 35,
         ticks: { color: '#6b7280' },
-        grid: { color: '#1e2a44' }
+        grid: { color: '#13203a' }
       },
       y: {
         title: { display: true, text: '수익률 (%)' },
         min: -30, max: 110,
         ticks: { color: '#6b7280', callback: v => (v>=0?'+':'')+v+'%' },
-        grid: { color: '#1e2a44' }
+        grid: { color: '#13203a' }
       }
     }
   },
