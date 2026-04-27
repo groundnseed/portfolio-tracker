@@ -43,7 +43,7 @@
 <body>
 <div class="wrap">
   <div class="header" id="header">
-    스냅샷 (2026-04-27) · 23개 종목 · 2026-03-10 ~ 2026-04-27 · 66건 거래 — 새 거래 추가 시 챗에 "한국투자 차트 새로고침"이라고 요청해 주세요
+    스냅샷 (2026-04-27) · 24개 종목 · 2026-03-10 ~ 2026-04-27 · 71건 거래 — 새 거래 추가 시 챗에 "한국투자 차트 새로고침"이라고 요청해 주세요
   </div>
   <div class="legend">
     <strong style="color:#e53935">▲ 매수</strong>
@@ -168,7 +168,13 @@ const trades = [
   { date:'2026-04-24', stock:'현대모비스',   side:'buy',  qty:3,  price:427000 },
   // 4/27
   { date:'2026-04-27', stock:'인텔리안테크', side:'buy', qty:8, price:134600 },
-  { date:'2026-04-27', stock:'에치에프알', side:'sell', qty:35, price:29400 }
+  { date:'2026-04-27', stock:'에치에프알', side:'sell', qty:35, price:29400 },
+  // 4/27 추가 거래 (카카오톡 체결 알림)
+  { date:'2026-04-27', stock:'인텔리안테크', side:'buy',  qty:1,  price:129500 },
+  { date:'2026-04-27', stock:'인텔리안테크', side:'buy',  qty:1,  price:129500 },
+  { date:'2026-04-27', stock:'더블유씨피',   side:'sell', qty:40, price:18000 },
+  { date:'2026-04-27', stock:'OCI홀딩스',    side:'buy',  qty:1,  price:367500 },
+  { date:'2026-04-27', stock:'인텔리안테크', side:'buy',  qty:3,  price:140200 }
 ];
 
 // 4/27 기준 보유중 종목 (스냅샷)
@@ -188,8 +194,8 @@ const heldSnapshot = {
   '현대건설':     { shares:118,value:20296000,ret:22.83 },
   'LIG넥스원':    { shares:7,  value:6664000, ret:17.24 },
   'HD현대중공업': { shares:4,  value:2708000, ret:16.06 },
-  '현대모비스':   { shares:23, value:9982000, ret:11.76 }
-  // OCI홀딩스는 어제 매수 — 추후 거래 데이터 추가 예정 (제외)
+  '현대모비스':   { shares:23, value:9982000, ret:11.76 },
+  'OCI홀딩스':    { shares:1,  value:376000,  ret:2.31 }
 };
 const heldStocks = new Set(Object.keys(heldSnapshot));
 
