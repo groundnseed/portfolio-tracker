@@ -45,9 +45,9 @@
     스냅샷 (2026-04-27) · 23개 종목 · 2026-03-10 ~ 2026-04-27 · 55건 거래 — 새 거래 추가 시 챗에 "한국투자 차트 새로고침"이라고 요청해 주세요
   </div>
   <div class="legend">
-    <strong>▲ 매수</strong>
-    <strong>▼ 매도</strong>
-    선: 그 시점의 보유 원가
+    <strong style="color:#e53935">▲ 매수</strong>
+    <strong style="color:#1e88e5">▼ 매도</strong>
+    선: 그 시점의 보유 원가 (종목별 색)
   </div>
   <div class="layout">
     <div class="chart-card">
@@ -61,6 +61,14 @@
       </div>
       <div class="stock-list-title">종목 (마지막 매입금액 순)</div>
       <div id="stockList"></div>
+    </div>
+  </div>
+
+  <div class="chart-card" style="margin-top:18px;">
+    <div style="font-size:14px; font-weight:500; margin-bottom:4px;">📊 비중 vs 수익률 (사분면)</div>
+    <div style="font-size:12px; color:#6b7280; margin-bottom:12px;">X = 비중(%) · Y = 수익률(%) · 버블 크기 = 평가금액. 우상단 = 핵심 winner ⭐</div>
+    <div style="position:relative; width:100%; height:480px;">
+      <canvas id="bubbleChart"></canvas>
     </div>
   </div>
 </div>
@@ -173,7 +181,7 @@ trades.forEach(t => {
     }
   }
   s.points.push({ x: t.date, y: s.costBasis });
-  s.events.push({ x: t.date, y: s.costBasis, side: t.side, qty: t.qty, price: t.price, tradeAmount: tradeAmount });
+  s.events.push({ x: t.date, y: tradeAmount, side: t.side, qty: t.qty, price: t.price });
 });
 
 // 날짜 문자열을 timestamp (ms)로 변환 — Chart.js time scale용
@@ -251,34 +259,26 @@ const triangleMarkers = {
       ds.data.forEach((pt, i) => {
         const px = meta.data[i];
         if (!px || isNaN(px.x) || isNaN(px.y)) return;
+        // 매수 = 빨강 ▲, 매도 = 파랑 ▼
+        const color = pt.side === 'buy' ? '#e53935' : '#1e88e5';
         ctx.save();
-        ctx.fillStyle = ds.borderColor;
+        ctx.fillStyle = color;
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 1;
         ctx.beginPath();
         const size = 7;
         if (pt.side === 'buy') {
-          // ▲
           ctx.moveTo(px.x, px.y - size);
           ctx.lineTo(px.x - size, px.y + size*0.7);
           ctx.lineTo(px.x + size, px.y + size*0.7);
         } else {
-          // ▼ (hollow)
           ctx.moveTo(px.x, px.y + size);
           ctx.lineTo(px.x - size, px.y - size*0.7);
           ctx.lineTo(px.x + size, px.y - size*0.7);
         }
         ctx.closePath();
-        if (pt.side === 'buy') {
-          ctx.fill();
-          ctx.stroke();
-        } else {
-          ctx.lineWidth = 1.5;
-          ctx.strokeStyle = ds.borderColor;
-          ctx.fillStyle = '#fff';
-          ctx.fill();
-          ctx.stroke();
-        }
+        ctx.fill();
+        ctx.stroke();
         ctx.restore();
       });
     });
@@ -339,7 +339,7 @@ const chart = new Chart(ctx, {
             const name = ds.label.replace(' (원가)','');
             if (ds._isEvents) {
               const sideStr = r.side === 'buy' ? '매수 ▲' : '매도 ▼';
-              return `${name} ${sideStr}: ${r.qty.toLocaleString()}주 × ${r.price.toLocaleString()}원 = ${r.tradeAmount.toLocaleString()}원`;
+              return `${name} ${sideStr}: ${r.qty.toLocaleString()}주 × ${r.price.toLocaleString()}원 = ${r.y.toLocaleString()}원`;
             } else if (ds._isLine) {
               return `${name} 보유원가: ${Math.round(r.y).toLocaleString()}원`;
             }
@@ -378,6 +378,123 @@ function updateChart() {
   chart.data.datasets = buildDatasets();
   chart.update();
 }
+
+// ─── 옵션 A: 비중 vs 수익률 버블 차트 ───
+const portfolioSnapshot = [
+  { name:'SK하이닉스',  value:51920000, ret:98.43 },
+  { name:'에스피지',    value:31660200, ret:82.32 },
+  { name:'현대건설',    value:20296000, ret:22.83 },
+  { name:'삼성전자',    value:16128000, ret:23.92 },
+  { name:'현대모비스',  value:9982000,  ret:11.76 },
+  { name:'LIG넥스원',   value:6664000,  ret:17.24 },
+  { name:'한화엔진',    value:6113400,  ret:45.77 },
+  { name:'인텔리안테크',value:5183700,  ret:5.41 },
+  { name:'현대차',      value:4208000,  ret:1.56 },
+  { name:'한국항공우주',value:3775200,  ret:-7.54 },
+  { name:'에치에프알',  value:3503500,  ret:-19.80 },
+  { name:'HD현대중공업',value:2708000,  ret:16.06 },
+  { name:'KODEX 코스닥150레버리지', value:2157000, ret:-0.72 },
+  { name:'상신이디피',  value:781500,   ret:8.84 },
+  { name:'알지노믹스',  value:593700,   ret:10.64 },
+  { name:'PLUS 코스닥150액티브', value:469000, ret:6.76 },
+  { name:'OCI홀딩스',   value:376000,   ret:2.31 }
+];
+const totalValue = portfolioSnapshot.reduce((s,h)=>s+h.value, 0);
+portfolioSnapshot.forEach(h => h.weight = h.value / totalValue * 100);
+
+function returnColor(r) {
+  if (r > 0) {
+    const t = Math.min(1, r/100);
+    return `rgb(${Math.round(195-t*155)},${Math.round(180-t*40)},${Math.round(150-t*60)})`;
+  } else if (r < 0) {
+    const t = Math.min(1, Math.abs(r)/30);
+    return `rgb(${Math.round(220+t*15)},${Math.round(140-t*80)},${Math.round(140-t*80)})`;
+  }
+  return '#aaa';
+}
+
+const bubbleData = portfolioSnapshot.map(h => ({
+  x: h.weight, y: h.ret,
+  r: Math.max(5, Math.sqrt(h.value/totalValue)*60),
+  name: h.name, value: h.value
+}));
+
+new Chart(document.getElementById('bubbleChart').getContext('2d'), {
+  type: 'bubble',
+  data: {
+    datasets: [{
+      data: bubbleData,
+      backgroundColor: portfolioSnapshot.map(h => returnColor(h.ret)),
+      borderColor: '#fff',
+      borderWidth: 1.5
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    layout: { padding: 24 },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: c => [
+            c.raw.name,
+            `비중: ${c.raw.x.toFixed(2)}%`,
+            `수익률: ${c.raw.y >= 0 ? '+' : ''}${c.raw.y.toFixed(2)}%`,
+            `평가금액: ${c.raw.value.toLocaleString()}원`
+          ]
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: { display: true, text: '비중 (%)' },
+        min: -2, max: 35,
+        ticks: { color: '#6b7280' },
+        grid: { color: 'rgba(0,0,0,0.06)' }
+      },
+      y: {
+        title: { display: true, text: '수익률 (%)' },
+        min: -30, max: 110,
+        ticks: { color: '#6b7280', callback: v => (v>=0?'+':'')+v+'%' },
+        grid: { color: 'rgba(0,0,0,0.06)' }
+      }
+    }
+  },
+  plugins: [{
+    id: 'quadrants',
+    afterDraw(chart) {
+      const { ctx, chartArea: ca, scales: { x, y } } = chart;
+      const x0 = x.getPixelForValue(0);
+      const y0 = y.getPixelForValue(0);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+      ctx.setLineDash([4,4]);
+      ctx.beginPath();
+      ctx.moveTo(ca.left, y0); ctx.lineTo(ca.right, y0);
+      ctx.moveTo(x0, ca.top); ctx.lineTo(x0, ca.bottom);
+      ctx.stroke();
+      ctx.restore();
+      ctx.save();
+      ctx.font = '11px sans-serif';
+      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.fillText('⭐ 핵심 winner', ca.right - 105, ca.top + 16);
+      ctx.fillText('📈 추가매수 후보', ca.left + 8, ca.top + 16);
+      ctx.fillText('⚠️ 위험', ca.right - 60, ca.bottom - 10);
+      ctx.fillText('✂️ 컷 후보', ca.left + 8, ca.bottom - 10);
+      ctx.restore();
+      ctx.save();
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillStyle = '#222';
+      ctx.textAlign = 'center';
+      chart.data.datasets[0].data.forEach(p => {
+        const px = x.getPixelForValue(p.x);
+        const py = y.getPixelForValue(p.y);
+        if (p.r > 12) ctx.fillText(p.name, px, py + 3);
+      });
+      ctx.restore();
+    }
+  }]
+});
 </script>
 </body>
 </html>
