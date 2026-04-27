@@ -65,6 +65,14 @@
     <div class="chart-scroll"><div class="chart-box"><canvas id="stockReturnChart"></canvas></div></div>
   </div>
 
+  <div class="card">
+    <div class="card-title">📊 비중 vs 수익률 (사분면)</div>
+    <div style="text-align:center; color:#6b7280; font-size:11px; margin-bottom:8px;">
+      X = 비중(%) · Y = 수익률(%) · 버블 크기 = 평가비중. 우상단 = 핵심 winner ⭐
+    </div>
+    <div class="chart-box-trend"><canvas id="bubbleChart"></canvas></div>
+  </div>
+
   <div id="err"></div>
 </div>
 
@@ -763,8 +771,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "market": "kr",
             "pct": 10.0,
             "basisPrice": 93065.0,
-            "currentPrice": 100240.0,
-            "returnPct": 7.71
+            "currentPrice": 98000.0,
+            "returnPct": 5.3
       },
       {
             "ticker": "KRX:009150",
@@ -772,8 +780,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "market": "kr",
             "pct": 6.0,
             "basisPrice": 518233.33,
-            "currentPrice": 794000.0,
-            "returnPct": 53.21
+            "currentPrice": 788000.0,
+            "returnPct": 52.06
       },
       {
             "ticker": "KRX:010060",
@@ -781,8 +789,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "market": "kr",
             "pct": 5.0,
             "basisPrice": 208242.86,
-            "currentPrice": 377000.0,
-            "returnPct": 81.04
+            "currentPrice": 384000.0,
+            "returnPct": 84.4
       },
       {
             "ticker": "KRX:000660",
@@ -790,8 +798,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "market": "kr",
             "pct": 5.5,
             "basisPrice": 1053700.0,
-            "currentPrice": 1292000.0,
-            "returnPct": 22.62
+            "currentPrice": 1222000.0,
+            "returnPct": 15.97
       },
       {
             "ticker": "KRX:005930",
@@ -799,8 +807,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "market": "kr",
             "pct": 4.0,
             "basisPrice": 203000.0,
-            "currentPrice": 224500.0,
-            "returnPct": 10.59
+            "currentPrice": 219500.0,
+            "returnPct": 8.13
       },
       {
             "ticker": "KRX:105560",
@@ -817,8 +825,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "market": "kr",
             "pct": 4.0,
             "basisPrice": 108350.0,
-            "currentPrice": 128900.0,
-            "returnPct": 18.97
+            "currentPrice": 127100.0,
+            "returnPct": 17.31
       },
       {
             "ticker": "KRX:006800",
@@ -826,8 +834,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "market": "kr",
             "pct": 4.0,
             "basisPrice": 69704.17,
-            "currentPrice": 68700.0,
-            "returnPct": -1.44
+            "currentPrice": 66900.0,
+            "returnPct": -4.02
       },
       {
             "ticker": "KRX:010120",
@@ -835,8 +843,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "market": "kr",
             "pct": 4.0,
             "basisPrice": 186825.0,
-            "currentPrice": 255500.0,
-            "returnPct": 36.76
+            "currentPrice": 226500.0,
+            "returnPct": 21.24
       },
       {
             "ticker": "KRX:000720",
@@ -844,8 +852,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "market": "kr",
             "pct": 3.0,
             "basisPrice": 176583.33,
-            "currentPrice": 171400.0,
-            "returnPct": -2.94
+            "currentPrice": 173000.0,
+            "returnPct": -2.03
       },
       {
             "ticker": "KRX:005380",
@@ -853,8 +861,8 @@ document.addEventListener('DOMContentLoaded', function() {
             "market": "kr",
             "pct": 3.0,
             "basisPrice": 540833.33,
-            "currentPrice": 524000.0,
-            "returnPct": -3.11
+            "currentPrice": 513000.0,
+            "returnPct": -5.15
       },
       {
             "ticker": "NYSEARCA:IWM",
@@ -1023,15 +1031,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('stockReturnTitle').textContent =
-      `종목별 현재 수익률 (${todayLabel}, ${stockReturns.length}종목)`;
-
-  } catch (e) {
-    document.getElementById('err').innerHTML =
-      '<div style="color:#ef4444;padding:12px;border:1px solid #ef4444;border-radius:8px;background:rgba(239,68,68,0.08);">' +
-      '⚠️ 차트 로드 중 오류: ' + (e.message || e) + '</div>';
-    console.error(e);
-  }
-});
-</script>
-</body>
-</html>
+      `종목별 현재 �
