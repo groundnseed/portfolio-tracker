@@ -186,6 +186,10 @@
         <button data-filter="held">보유중</button>
         <button data-filter="closed">해제</button>
       </div>
+      <div class="filter-buttons" style="margin-top:-6px;">
+        <button data-action="check-all">모두 선택</button>
+        <button data-action="uncheck-all">모두 해제</button>
+      </div>
       <div class="stock-list-title">종목 (마지막 매입금액 순)</div>
       <div id="stockList"></div>
     </div>
@@ -480,10 +484,10 @@ stockNames.forEach(name => {
   stockListEl.appendChild(item);
 });
 
-// ─── 필터 버튼 ───
-document.querySelectorAll('.filter-buttons button').forEach(btn => {
+// ─── 필터 버튼 (전체/보유중/해제) ───
+document.querySelectorAll('.filter-buttons button[data-filter]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-buttons button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter-buttons button[data-filter]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const filter = btn.dataset.filter;
     visibleStocks.clear();
@@ -498,12 +502,28 @@ document.querySelectorAll('.filter-buttons button').forEach(btn => {
   });
 });
 
+// ─── 모두 선택 / 모두 해제 ───
+document.querySelectorAll('.filter-buttons button[data-action]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const action = btn.dataset.action;
+    const checked = action === 'check-all';
+    visibleStocks.clear();
+    stockNames.forEach(name => {
+      if (checked) visibleStocks.add(name);
+      const item = document.querySelector(`.stock-item[data-stock="${CSS.escape(name)}"]`);
+      if (item) item.querySelector('input').checked = checked;
+    });
+    updateChart();
+  });
+});
+
 // ─── 커스텀 ▲▼ 마커 플러그인 ───
-// ─── 라인 끝 수익률 라벨 (3차원 정보) ───
+// ─── 라인 끝 수익률 라벨 (겹침 방지 + leader line) ───
 const returnLabels = {
   id: 'returnLabels',
   afterDatasetsDraw(chart) {
     const ctx = chart.ctx;
+    const items = [];
     chart.data.datasets.forEach((ds, dsIdx) => {
       if (!ds._isLine || !ds._snap) return;
       const meta = chart.getDatasetMeta(dsIdx);
@@ -513,38 +533,71 @@ const returnLabels = {
       const last = pts[pts.length - 1];
       const ret = ds._snap.ret;
       if (ret == null || isNaN(last.x) || isNaN(last.y)) return;
-      const sign = ret >= 0 ? '+' : '';
-      const text = `${sign}${ret.toFixed(1)}%`;
-      const labelColor = ret > 5 ? '#7cc88a' : (ret < -5 ? '#e57373' : '#b8c5dc');
       const fontSize = Math.min(13, 10 + Math.abs(ret) / 20);
+      items.push({
+        anchorX: last.x, anchorY: last.y, labelY: last.y,
+        ret, fontSize, dsIdx,
+        color: ret > 5 ? '#4ade80' : (ret < -5 ? '#f87171' : '#a4b3d4'),
+        lineColor: ds.borderColor
+      });
+    });
+    if (items.length === 0) return;
+
+    // Y로 정렬하고 최소 18px 간격 보장
+    items.sort((a, b) => a.labelY - b.labelY);
+    const minGap = 18;
+    for (let i = 1; i < items.length; i++) {
+      if (items[i].labelY - items[i-1].labelY < minGap) {
+        items[i].labelY = items[i-1].labelY + minGap;
+      }
+    }
+
+    items.forEach(it => {
+      const sign = it.ret >= 0 ? '+' : '';
+      const text = `${sign}${it.ret.toFixed(1)}%`;
       ctx.save();
-      ctx.font = `bold ${fontSize}px "Noto Sans KR", sans-serif`;
+      ctx.font = `600 ${it.fontSize}px "Inter", "Noto Sans KR", sans-serif`;
       ctx.textBaseline = 'middle';
-      // 박스 배경
-      const padX = 5, padY = 2;
+      const padX = 6, padY = 3;
       const tw = ctx.measureText(text).width;
-      const bx = last.x + 6;
-      const by = last.y - fontSize/2 - padY;
-      ctx.fillStyle = 'rgba(5, 8, 15, 0.88)';
-      ctx.strokeStyle = labelColor;
+      const bx = it.anchorX + 10;
+      const by = it.labelY - it.fontSize/2 - padY;
+
+      // Leader line (anchor → label)
+      if (Math.abs(it.labelY - it.anchorY) > 2) {
+        ctx.strokeStyle = it.lineColor;
+        ctx.globalAlpha = 0.45;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        ctx.moveTo(it.anchorX, it.anchorY);
+        ctx.lineTo(bx, it.labelY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.globalAlpha = 1;
+      }
+
+      // Pill
+      ctx.fillStyle = 'rgba(13, 20, 36, 0.92)';
+      ctx.strokeStyle = it.color;
       ctx.lineWidth = 1;
-      const r = 3;
+      const r = 4;
+      const w = tw + padX*2, h = it.fontSize + padY*2;
       ctx.beginPath();
       ctx.moveTo(bx + r, by);
-      ctx.lineTo(bx + tw + padX*2 - r, by);
-      ctx.quadraticCurveTo(bx + tw + padX*2, by, bx + tw + padX*2, by + r);
-      ctx.lineTo(bx + tw + padX*2, by + fontSize + padY*2 - r);
-      ctx.quadraticCurveTo(bx + tw + padX*2, by + fontSize + padY*2, bx + tw + padX*2 - r, by + fontSize + padY*2);
-      ctx.lineTo(bx + r, by + fontSize + padY*2);
-      ctx.quadraticCurveTo(bx, by + fontSize + padY*2, bx, by + fontSize + padY*2 - r);
+      ctx.lineTo(bx + w - r, by);
+      ctx.quadraticCurveTo(bx + w, by, bx + w, by + r);
+      ctx.lineTo(bx + w, by + h - r);
+      ctx.quadraticCurveTo(bx + w, by + h, bx + w - r, by + h);
+      ctx.lineTo(bx + r, by + h);
+      ctx.quadraticCurveTo(bx, by + h, bx, by + h - r);
       ctx.lineTo(bx, by + r);
       ctx.quadraticCurveTo(bx, by, bx + r, by);
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
-      // 텍스트
-      ctx.fillStyle = labelColor;
-      ctx.fillText(text, bx + padX, by + fontSize/2 + padY);
+      ctx.fillStyle = it.color;
+      ctx.fillText(text, bx + padX, by + it.fontSize/2 + padY);
       ctx.restore();
     });
   }
