@@ -174,7 +174,7 @@
     <span class="sep">·</span>
     <span>선 = 보유원가 (종목별 색)</span>
     <span class="sep">·</span>
-    <span>선 끝 라벨 = 현재 수익금</span>
+    <span>선 끝 라벨 = 현재 수익률</span>
   </div>
 
   <div class="chart-card">
@@ -607,15 +607,8 @@ const returnLabels = {
     }
 
     items.forEach(it => {
-      // 수익금 (KRW) 계산: snap.value - snap.value/(1+ret/100)
-      const snap = it.snap;
-      const profit = snap ? (snap.value - snap.value / (1 + snap.ret/100)) : 0;
-      const sign = profit >= 0 ? '+' : '-';
-      const absP = Math.abs(profit);
-      let text;
-      if (absP >= 1e8) text = sign + (absP/1e8).toFixed(2) + '억';
-      else if (absP >= 1e4) text = sign + (absP/1e4).toFixed(0) + '만';
-      else text = sign + absP.toLocaleString() + '원';
+      const sign = it.ret >= 0 ? '+' : '';
+      const text = `${sign}${it.ret.toFixed(1)}%`;
       ctx.save();
       ctx.font = `600 ${it.fontSize}px "Inter", "Noto Sans KR", sans-serif`;
       ctx.textBaseline = 'middle';
