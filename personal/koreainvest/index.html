@@ -858,27 +858,41 @@ const bubbleChartObj = new Chart(document.getElementById('bubbleChart').getConte
     plugins: {
       legend: { display: false },
       tooltip: {
+        backgroundColor: 'rgba(2,5,12,0.95)', titleColor: '#fbbf24', bodyColor: '#e4e7ef',
         callbacks: {
-          label: c => [
-            c.raw.name,
-            `비중: ${c.raw.x.toFixed(2)}%`,
-            `수익률: ${c.raw.y >= 0 ? '+' : ''}${c.raw.y.toFixed(2)}%`,
-            `평가금액: ${c.raw.value.toLocaleString()}원`
-          ]
+          label: c => {
+            const sign = c.raw.y >= 0 ? '+' : '-';
+            const abs = Math.abs(c.raw.y);
+            return [
+              c.raw.name,
+              `비중: ${c.raw.x.toFixed(2)}%`,
+              `수익금: ${c.raw.y >= 0 ? '+' : ''}${c.raw.y.toLocaleString()}원`,
+              `수익률: ${c.raw.ret >= 0 ? '+' : ''}${c.raw.ret.toFixed(2)}%`,
+              `평가금액: ${c.raw.value.toLocaleString()}원`
+            ];
+          }
         }
       }
     },
     scales: {
       x: {
-        title: { display: true, text: '비중 (%)' },
+        title: { display: true, text: '비중 (%)', color: '#a4b3d4', font: { size: 11 } },
         min: -2, max: 35,
-        ticks: { color: '#6b7280' },
+        ticks: { color: '#a4b3d4', callback: v => v + '%' },
         grid: { display: false }
       },
       y: {
-        title: { display: true, text: '수익률 (%)' },
-        min: -30, max: 110,
-        ticks: { color: '#6b7280', callback: v => (v>=0?'+':'')+v+'%' },
+        title: { display: true, text: '수익금 (KRW)', color: '#a4b3d4', font: { size: 11 } },
+        ticks: {
+          color: '#a4b3d4',
+          callback: v => {
+            const sign = v >= 0 ? '+' : '-';
+            const abs = Math.abs(v);
+            if (abs >= 1e8) return sign + (abs/1e8).toFixed(1) + '억';
+            if (abs >= 1e4) return sign + (abs/1e4).toFixed(0) + '만';
+            return sign + abs.toLocaleString();
+          }
+        },
         grid: { display: false }
       }
     }
@@ -890,7 +904,7 @@ const bubbleChartObj = new Chart(document.getElementById('bubbleChart').getConte
       const x0 = x.getPixelForValue(0);
       const y0 = y.getPixelForValue(0);
       ctx.save();
-      ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.18)';
       ctx.setLineDash([4,4]);
       ctx.beginPath();
       ctx.moveTo(ca.left, y0); ctx.lineTo(ca.right, y0);
@@ -899,7 +913,7 @@ const bubbleChartObj = new Chart(document.getElementById('bubbleChart').getConte
       ctx.restore();
       ctx.save();
       ctx.font = '11px sans-serif';
-      ctx.fillStyle = 'rgba(0,0,0,0.45)';
+      ctx.fillStyle = 'rgba(164,179,212,0.55)';
       ctx.fillText('⭐ 핵심 winner', ca.right - 105, ca.top + 16);
       ctx.fillText('📈 추가매수 후보', ca.left + 8, ca.top + 16);
       ctx.fillText('⚠️ 위험', ca.right - 60, ca.bottom - 10);
@@ -907,12 +921,13 @@ const bubbleChartObj = new Chart(document.getElementById('bubbleChart').getConte
       ctx.restore();
       ctx.save();
       ctx.font = 'bold 11px sans-serif';
-      ctx.fillStyle = '#222';
+      ctx.fillStyle = '#e4e7ef';
       ctx.textAlign = 'center';
       chart.data.datasets[0].data.forEach(p => {
+        if (p.x <= 5) return;  // 비중 5% 이하 라벨 숨김
         const px = x.getPixelForValue(p.x);
         const py = y.getPixelForValue(p.y);
-        if (p.r > 12) ctx.fillText(p.name, px, py + 3);
+        ctx.fillText(p.name, px, py + 3);
       });
       ctx.restore();
     }
