@@ -938,6 +938,7 @@ const bubbleChartObj = new Chart(document.getElementById('bubbleChart').getConte
 
 // ─── 📈 수익률 vs 비중 상관관계 차트 ───
 (function buildCorrChart() {
+  console.log('[CorrChart] start, trades=', trades.length, 'visibleStocks=', visibleStocks.size);
   // 모든 거래를 시간순으로 처리하면서 각 시점의 (수익률, 비중) 계산
   const sortedTrades = [...trades].sort((a,b) => a.date.localeCompare(b.date));
 
@@ -1019,6 +1020,11 @@ const bubbleChartObj = new Chart(document.getElementById('bubbleChart').getConte
     }
   });
 
+  console.log('[CorrChart] series built:', Object.keys(series).length, 'stocks');
+  Object.entries(series).slice(0,5).forEach(([n,pts]) => {
+    console.log('  ', n, pts.length, 'pts, last:', pts[pts.length-1]);
+  });
+
   function buildCorrDatasets() {
     const datasets = [];
     Object.keys(series).forEach(name => {
@@ -1054,13 +1060,19 @@ const bubbleChartObj = new Chart(document.getElementById('bubbleChart').getConte
   }
 
   const corrCtx = document.getElementById('corrChart').getContext('2d');
+  const initDs = buildCorrDatasets();
+  console.log('[CorrChart] datasets:', initDs.length);
+  if (initDs.length > 0) {
+    console.log('  sample data:', initDs[0].label, initDs[0].data.slice(0,3));
+  }
   const corrChart = new Chart(corrCtx, {
     type: 'line',
-    data: { datasets: buildCorrDatasets() },
+    data: { datasets: initDs },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       layout: { padding: { right: 24, top: 12 } },
+      animation: false,
       interaction: { mode: 'index', axis: 'x', intersect: false },
       plugins: {
         legend: {
