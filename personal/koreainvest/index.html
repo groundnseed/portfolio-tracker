@@ -11,11 +11,11 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
   :root {
-    --bg: #060912;
-    --bg-elev-1: #0d1424;
-    --bg-elev-2: #131c33;
-    --border: #1d2845;
-    --border-soft: #15203a;
+    --bg: #02040a;
+    --bg-elev-1: #060a14;
+    --bg-elev-2: #0a1224;
+    --border: #131d36;
+    --border-soft: #0e1830;
     --text-primary: #f1f4fb;
     --text-secondary: #a4b3d4;
     --text-tertiary: #6b7896;
@@ -28,7 +28,7 @@
   }
   body {
     font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: radial-gradient(ellipse at top left, #0a1226 0%, #060912 50%);
+    background: radial-gradient(ellipse at top left, #050b1a 0%, #02040a 60%);
     background-attachment: fixed;
     color: var(--text-primary);
     padding: 24px 20px;
@@ -628,7 +628,7 @@ const returnLabels = {
       }
 
       // Pill
-      ctx.fillStyle = 'rgba(13, 20, 36, 0.92)';
+      ctx.fillStyle = 'rgba(2, 5, 12, 0.95)';
       ctx.strokeStyle = it.color;
       ctx.lineWidth = 1;
       const r = 4;
@@ -837,7 +837,7 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
     datasets: [{
       data: bubbleData,
       backgroundColor: portfolioSnapshot.map(h => returnColor(h.ret)),
-      borderColor: '#05080f',
+      borderColor: '#02040a',
       borderWidth: 1.5
     }]
   },
@@ -1000,8 +1000,8 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
   }
 
   const layout = {
-    paper_bgcolor: '#0a1020',
-    plot_bgcolor: '#0a1020',
+    paper_bgcolor: '#060a14',
+    plot_bgcolor: '#060a14',
     font: { color: '#b8c5dc', family: 'Noto Sans KR, sans-serif', size: 11 },
     margin: { l: 0, r: 0, t: 8, b: 0 },
     showlegend: true,
@@ -1015,23 +1015,23 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
     scene: {
       xaxis: {
         title: '날짜', tickvals: tickVals, ticktext: tickText,
-        backgroundcolor: '#05080f', gridcolor: 'rgba(0,0,0,0)', showgrid: false,
+        backgroundcolor: '#02040a', gridcolor: 'rgba(0,0,0,0)', showgrid: false,
         zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc'
       },
       yaxis: {
         title: '보유원가 (KRW, log)', type: 'log',
-        backgroundcolor: '#05080f', gridcolor: 'rgba(0,0,0,0)', showgrid: false,
+        backgroundcolor: '#02040a', gridcolor: 'rgba(0,0,0,0)', showgrid: false,
         zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc'
       },
       zaxis: {
         title: '수익률 (%)',
-        backgroundcolor: '#05080f', gridcolor: 'rgba(0,0,0,0)', showgrid: false,
+        backgroundcolor: '#02040a', gridcolor: 'rgba(0,0,0,0)', showgrid: false,
         zerolinecolor: '#2a3a5a', showbackground: true, color: '#b8c5dc'
       },
       camera: { eye: { x: -1.5, y: -1.6, z: 1.0 } },
       aspectmode: 'manual',
       aspectratio: { x: 1.6, y: 1.0, z: 0.9 },
-      bgcolor: '#0a1020'
+      bgcolor: '#060a14'
     }
   };
   Plotly.newPlot('threeDChart', traces, layout, {
