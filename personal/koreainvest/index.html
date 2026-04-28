@@ -196,16 +196,16 @@
   </div>
 
   <div class="chart-card" style="margin-top:18px;">
-    <div class="chart-card-title">📊 비중 vs 수익률 (사분면)</div>
-    <div class="chart-card-subtitle">X = 비중(%) · Y = 수익률(%) · 버블 크기 = 평가금액. 우상단 = 핵심 winner ⭐</div>
+    <div class="chart-card-title">📊 비중 vs 수익금 (사분면)</div>
+    <div class="chart-card-subtitle">X = 비중(%) · Y = 수익금(KRW) · 버블 크기 = 평가금액. 라벨은 비중 5% 초과만</div>
     <div style="position:relative; width:100%; height:480px;">
       <canvas id="bubbleChart"></canvas>
     </div>
   </div>
 
   <div class="chart-card" style="margin-top:18px;">
-    <div class="chart-card-title">📈 수익률 vs 비중 상관관계 <span style="font-size:11px; color: var(--text-tertiary); font-weight: 400;">(시간 추이)</span></div>
-    <div class="chart-card-subtitle">실선 = 수익률(%) · 점선 = 비중(%) · 두 축이 같이 움직이는 종목 = 비중 늘릴수록 수익률 ↑ (또는 ↓ 동조). 사이드바에서 종목 선택</div>
+    <div class="chart-card-title">📈 수익금 vs 비중 상관관계 <span style="font-size:11px; color: var(--text-tertiary); font-weight: 400;">(시간 추이)</span></div>
+    <div class="chart-card-subtitle">실선 = 수익금(KRW) · 점선 = 비중(%) · 두 축이 같이 움직이면 비중 늘릴수록 수익 동조. 사이드바에서 종목 선택</div>
     <div style="position:relative; width:100%; height:540px;">
       <canvas id="corrChart"></canvas>
     </div>
@@ -827,18 +827,27 @@ function returnColor(r) {
   return '#aaa';
 }
 
-const bubbleData = portfolioSnapshot.map(h => ({
-  x: h.weight, y: h.ret,
-  r: Math.max(5, Math.sqrt(h.value/totalValue)*60),
-  name: h.name, value: h.value
-}));
+function buildBubbleData() {
+  const filtered = portfolioSnapshot.filter(h => visibleStocks.has(h.name));
+  return filtered.map(h => ({
+    x: h.weight,
+    y: profitOf(h),
+    r: Math.max(5, Math.sqrt(h.value/totalValue)*60),
+    name: h.name,
+    value: h.value,
+    ret: h.ret
+  }));
+}
+function bubbleColors() {
+  return portfolioSnapshot.filter(h => visibleStocks.has(h.name)).map(h => returnColor(h.ret));
+}
 
-new Chart(document.getElementById('bubbleChart').getContext('2d'), {
+const bubbleChartObj = new Chart(document.getElementById('bubbleChart').getContext('2d'), {
   type: 'bubble',
   data: {
     datasets: [{
-      data: bubbleData,
-      backgroundColor: portfolioSnapshot.map(h => returnColor(h.ret)),
+      data: buildBubbleData(),
+      backgroundColor: bubbleColors(),
       borderColor: '#02040a',
       borderWidth: 1.5
     }]
@@ -951,7 +960,7 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
       const weight = total > 0 ? stockVal/total*100 : 0;
       // 초기 수익률은 0 (가격 정보 없음, 매수 직후 가정)
       series[name] = series[name] || [];
-      series[name].push({ x: new Date(startDate).getTime(), weight: weight, ret: 0 });
+      series[name].push({ x: new Date(startDate).getTime(), weight: weight, profit: 0 });
     }
   });
 
@@ -973,10 +982,10 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
     const total = snapshot();
     const stockVal = sharesT[t.stock] * t.price;
     const weight = total > 0 ? stockVal/total*100 : 0;
-    const ret = costT[t.stock] > 0 ? ((stockVal - costT[t.stock])/costT[t.stock])*100 : 0;
+    const profit = stockVal - costT[t.stock];  // 수익금 (KRW)
 
     series[t.stock] = series[t.stock] || [];
-    series[t.stock].push({ x: new Date(t.date).getTime(), weight, ret });
+    series[t.stock].push({ x: new Date(t.date).getTime(), weight, profit });
   });
 
   // 종료 시점 (4/27): 스냅샷 비중/수익률로 마무리 — 거래 없는 보유종목도 라인 연장
@@ -987,9 +996,9 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
     // 총 평가금액 (스냅샷 합)
     const totalSnap = Object.values(heldSnapshot).reduce((s,h)=>s+h.value,0);
     const finalWeight = (snap.value / totalSnap) * 100;
-    const finalRet = snap.ret;
+    const finalProfit = snap.value - snap.value/(1+snap.ret/100);
     if (!lastPt || lastPt.x !== new Date(endDate).getTime()) {
-      series[name].push({ x: new Date(endDate).getTime(), weight: finalWeight, ret: finalRet });
+      series[name].push({ x: new Date(endDate).getTime(), weight: finalWeight, profit: finalProfit });
     }
   });
 
@@ -1000,16 +1009,16 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
       if (series[name].length < 2) return;
       const color = stockColor[name] || '#888';
 
-      // 수익률 (실선, 좌측 Y)
+      // 수익금 (실선, 좌측 Y)
       datasets.push({
-        label: name + ' 수익률',
-        data: series[name].map(p => ({x: p.x, y: p.ret})),
+        label: name + ' 수익금',
+        data: series[name].map(p => ({x: p.x, y: p.profit})),
         borderColor: color,
         backgroundColor: color + '20',
         borderWidth: 2,
         pointRadius: 0,
         tension: 0.2,
-        yAxisID: 'yReturn'
+        yAxisID: 'yProfit'
       });
       // 비중 (점선, 우측 Y)
       datasets.push({
@@ -1047,7 +1056,14 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
           backgroundColor: 'rgba(2,5,12,0.95)', titleColor: '#fbbf24', bodyColor: '#e4e7ef',
           callbacks: {
             title: items => new Date(items[0].raw.x).toISOString().slice(0,10),
-            label: ctx => `${ctx.dataset.label}: ${ctx.raw.y.toFixed(2)}%`
+            label: ctx => {
+              if (ctx.dataset.label.includes('수익금')) {
+                const v = ctx.raw.y;
+                const sign = v >= 0 ? '+' : '-';
+                return `${ctx.dataset.label}: ${sign}${Math.abs(v).toLocaleString()}원`;
+              }
+              return `${ctx.dataset.label}: ${ctx.raw.y.toFixed(2)}%`;
+            }
           }
         }
       },
@@ -1059,11 +1075,20 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
           grid: { display: false, drawOnChartArea: false },
           border: { display: true, color: '#131d36' }
         },
-        yReturn: {
+        yProfit: {
           type: 'linear',
           position: 'left',
-          title: { display: true, text: '수익률 (%)', color: '#4ade80', font: { size: 11 } },
-          ticks: { color: '#a4b3d4', font: { size: 10 }, callback: v => (v>=0?'+':'')+v+'%' },
+          title: { display: true, text: '수익금 (KRW)', color: '#4ade80', font: { size: 11 } },
+          ticks: {
+            color: '#a4b3d4', font: { size: 10 },
+            callback: v => {
+              const sign = v >= 0 ? '+' : '-';
+              const abs = Math.abs(v);
+              if (abs >= 1e8) return sign + (abs/1e8).toFixed(1)+'억';
+              if (abs >= 1e4) return sign + (abs/1e4).toFixed(0)+'만';
+              return sign + abs.toLocaleString();
+            }
+          },
           grid: { display: false },
           border: { display: true, color: '#131d36' }
         },
@@ -1085,6 +1110,12 @@ new Chart(document.getElementById('bubbleChart').getContext('2d'), {
     origUpdateChart();
     corrChart.data.datasets = buildCorrDatasets();
     corrChart.update();
+    // 버블 차트도 갱신
+    if (typeof bubbleChartObj !== 'undefined') {
+      bubbleChartObj.data.datasets[0].data = buildBubbleData();
+      bubbleChartObj.data.datasets[0].backgroundColor = bubbleColors();
+      bubbleChartObj.update();
+    }
   };
 })();
 
