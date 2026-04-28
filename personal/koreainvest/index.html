@@ -174,7 +174,15 @@
     <span class="sep">·</span>
     <span>선 = 보유원가 (종목별 색)</span>
     <span class="sep">·</span>
-    <span>선 끝 라벨 = 현재 수익률</span>
+    <span>선 끝 라벨 = 현재 수익금</span>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-card-title">📈 수익금 vs 비중 상관관계 <span style="font-size:11px; color: var(--text-tertiary); font-weight: 400;">(시간 추이)</span></div>
+    <div class="chart-card-subtitle">실선 = 수익금(KRW) · 점선 = 비중(%) · 두 축이 같이 움직이면 비중 늘릴수록 수익 동조. 사이드바에서 종목 선택</div>
+    <div style="position:relative; width:100%; height:540px;">
+      <canvas id="corrChart"></canvas>
+    </div>
   </div>
   <div class="layout">
     <div class="chart-card">
@@ -203,13 +211,6 @@
     </div>
   </div>
 
-  <div class="chart-card" style="margin-top:18px;">
-    <div class="chart-card-title">📈 수익금 vs 비중 상관관계 <span style="font-size:11px; color: var(--text-tertiary); font-weight: 400;">(시간 추이)</span></div>
-    <div class="chart-card-subtitle">실선 = 수익금(KRW) · 점선 = 비중(%) · 두 축이 같이 움직이면 비중 늘릴수록 수익 동조. 사이드바에서 종목 선택</div>
-    <div style="position:relative; width:100%; height:540px;">
-      <canvas id="corrChart"></canvas>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -589,6 +590,7 @@ const returnLabels = {
       items.push({
         anchorX: last.x, anchorY: last.y, labelY: last.y,
         ret, fontSize, dsIdx,
+        snap: ds._snap,  // 수익금 계산용
         color: ret > 5 ? '#4ade80' : (ret < -5 ? '#f87171' : '#a4b3d4'),
         lineColor: ds.borderColor
       });
@@ -605,8 +607,15 @@ const returnLabels = {
     }
 
     items.forEach(it => {
-      const sign = it.ret >= 0 ? '+' : '';
-      const text = `${sign}${it.ret.toFixed(1)}%`;
+      // 수익금 (KRW) 계산: snap.value - snap.value/(1+ret/100)
+      const snap = it.snap;
+      const profit = snap ? (snap.value - snap.value / (1 + snap.ret/100)) : 0;
+      const sign = profit >= 0 ? '+' : '-';
+      const absP = Math.abs(profit);
+      let text;
+      if (absP >= 1e8) text = sign + (absP/1e8).toFixed(2) + '억';
+      else if (absP >= 1e4) text = sign + (absP/1e4).toFixed(0) + '만';
+      else text = sign + absP.toLocaleString() + '원';
       ctx.save();
       ctx.font = `600 ${it.fontSize}px "Inter", "Noto Sans KR", sans-serif`;
       ctx.textBaseline = 'middle';
