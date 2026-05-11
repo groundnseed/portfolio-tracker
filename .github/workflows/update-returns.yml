@@ -1,0 +1,39 @@
+name: Update daily returnEvents
+
+on:
+  schedule:
+    # 매일 22:00 UTC = 07:00 KST 익일
+    # US 장 마감(21:00 UTC) 후 1시간 버퍼, KR 데이터도 이미 확정된 상태
+    - cron: '0 22 * * 1-5'
+  workflow_dispatch:  # 수동 실행 + 백필용
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Update return events (backfill missing days + today)
+        run: python scripts/update_returns.py
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet; then
+            echo "변경 없음 (휴장일 또는 이미 업데이트됨)"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          KST_DATE=$(TZ=Asia/Seoul date +%Y-%m-%d)
+          git add index.html
+          git commit -m "data: returnEvents 일별 추가 (${KST_DATE} KST)"
+          git push
