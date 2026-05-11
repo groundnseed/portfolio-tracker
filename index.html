@@ -551,169 +551,229 @@ document.addEventListener('DOMContentLoaded', function() {
     // 💰 누적 수익률 추이 (기준가 × 현재가 · 총/🇰🇷/🇺🇲)
     // ═══════════════════════════════════════════════════
     const returnEvents = [
-      {
+        {
             "date": "3/10",
             "totalReturn": -1.49,
             "krReturn": -2.42,
             "usReturn": 0.38
-      },
-      {
+        },
+        {
             "date": "3/17",
             "totalReturn": -0.43,
             "krReturn": 0.01,
             "usReturn": -1.76
-      },
-      {
+        },
+        {
             "date": "3/19",
             "totalReturn": 4.98,
             "krReturn": 5.46,
             "usReturn": 3.46
-      },
-      {
+        },
+        {
             "date": "3/20",
             "totalReturn": 3.67,
             "krReturn": 5.63,
             "usReturn": -1.86
-      },
-      {
+        },
+        {
             "date": "3/22",
             "totalReturn": -1.55,
             "krReturn": -2.06,
             "usReturn": -0.09
-      },
-      {
+        },
+        {
             "date": "3/23",
             "totalReturn": -1.13,
             "krReturn": -1.68,
             "usReturn": -0.09
-      },
-      {
+        },
+        {
             "date": "3/25",
             "totalReturn": 1.94,
             "krReturn": 0.74,
             "usReturn": 4.22
-      },
-      {
+        },
+        {
             "date": "3/26",
             "totalReturn": -1.42,
             "krReturn": 0.26,
             "usReturn": -4.32
-      },
-      {
+        },
+        {
             "date": "3/27",
             "totalReturn": -3.26,
             "krReturn": -2.35,
             "usReturn": -4.49
-      },
-      {
+        },
+        {
             "date": "3/29",
             "totalReturn": -5.01,
             "krReturn": -2.1,
             "usReturn": -9.51
-      },
-      {
+        },
+        {
             "date": "3/31",
             "totalReturn": -4.13,
             "krReturn": -5.43,
             "usReturn": -1.6
-      },
-      {
+        },
+        {
             "date": "4/3",
             "totalReturn": 4.58,
             "krReturn": 5.67,
             "usReturn": 3.17
-      },
-      {
+        },
+        {
             "date": "4/5",
             "totalReturn": 3.27,
             "krReturn": 3.33,
             "usReturn": 3.17
-      },
-      {
+        },
+        {
             "date": "4/7",
             "totalReturn": 2.91,
             "krReturn": 0.26,
             "usReturn": 6.04
-      },
-      {
+        },
+        {
             "date": "4/8",
             "totalReturn": 8.67,
             "krReturn": 4.13,
             "usReturn": 16.6
-      },
-      {
+        },
+        {
             "date": "4/9",
             "totalReturn": 7.89,
             "krReturn": 3.2,
             "usReturn": 13.1
-      },
-      {
+        },
+        {
             "date": "4/10",
             "totalReturn": 8.62,
             "krReturn": 5.02,
             "usReturn": 12.29
-      },
-      {
+        },
+        {
             "date": "4/12",
             "totalReturn": 8.55,
             "krReturn": 3.74,
             "usReturn": 12.94
-      },
-      {
+        },
+        {
             "date": "4/13",
             "totalReturn": 8.23,
             "krReturn": 3.25,
             "usReturn": 12.94
-      },
-      {
+        },
+        {
             "date": "4/14",
             "totalReturn": 8.16,
             "krReturn": 4.75,
             "usReturn": 11.32
-      },
-      {
+        },
+        {
             "date": "4/15",
             "totalReturn": 8.89,
             "krReturn": 8.72,
             "usReturn": 9.04
-      },
-      {
+        },
+        {
             "date": "4/16",
             "totalReturn": 13.42,
             "krReturn": 15.73,
             "usReturn": 11.08
-      },
-      {
+        },
+        {
             "date": "4/17",
             "totalReturn": 12.92,
             "krReturn": 13.5,
             "usReturn": 12.34
-      },
-      {
+        },
+        {
             "date": "4/19",
             "totalReturn": 11.92,
             "krReturn": 13.38,
             "usReturn": 10.56
-      },
-      {
+        },
+        {
             "date": "4/21",
             "totalReturn": 13.3,
             "krReturn": 17.21,
             "usReturn": 9.24
-      },
-      {
+        },
+        {
             "date": "4/22",
             "totalReturn": 14.98,
             "krReturn": 18.85,
             "usReturn": 10.88
-      },
-      {
+        },
+        {
             "date": "4/23",
             "totalReturn": 15.84,
             "krReturn": 20.52,
             "usReturn": 10.88
-      }
-];
+        },
+        {
+            "date": "4/24",
+            "totalReturn": 18.33,
+            "krReturn": 19.46,
+            "usReturn": 16.72
+        },
+        {
+            "date": "4/27",
+            "totalReturn": 20.3,
+            "krReturn": 22.18,
+            "usReturn": 17.62
+        },
+        {
+            "date": "4/28",
+            "totalReturn": 19.46,
+            "krReturn": 23.22,
+            "usReturn": 14.12
+        },
+        {
+            "date": "4/29",
+            "totalReturn": 21.59,
+            "krReturn": 23.92,
+            "usReturn": 18.3
+        },
+        {
+            "date": "4/30",
+            "totalReturn": 22.3,
+            "krReturn": 22.61,
+            "usReturn": 21.85
+        },
+        {
+            "date": "5/1",
+            "totalReturn": 23.56,
+            "krReturn": 22.61,
+            "usReturn": 24.9
+        },
+        {
+            "date": "5/4",
+            "totalReturn": 26.66,
+            "krReturn": 28.23,
+            "usReturn": 24.44
+        },
+        {
+            "date": "5/6",
+            "totalReturn": 34.67,
+            "krReturn": 34.34,
+            "usReturn": 35.14
+        },
+        {
+            "date": "5/7",
+            "totalReturn": 33.82,
+            "krReturn": 35.95,
+            "usReturn": 30.81
+        },
+        {
+            "date": "5/8",
+            "totalReturn": 36.66,
+            "krReturn": 35.4,
+            "usReturn": 38.44
+        }
+    ];
 
     const rtCtx = document.getElementById('returnTrendChart').getContext('2d');
     new Chart(rtCtx, {
