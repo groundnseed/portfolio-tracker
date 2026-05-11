@@ -1,8 +1,6 @@
 name: Update daily returnEvents
 
 on:
-  push:
-    paths: ['scripts/update_returns.py', '.github/workflows/update-returns.yml']
   schedule:
     # 매일 22:00 UTC = 07:00 KST 익일
     # US 장 마감(21:00 UTC) 후 1시간 버퍼, KR 데이터도 이미 확정된 상태
