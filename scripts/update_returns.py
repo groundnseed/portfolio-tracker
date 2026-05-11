@@ -113,7 +113,8 @@ def main():
         target_dates = [datetime.strptime(args.date, '%Y-%m-%d').date()]
     else:
         today = date.today()
-        target_dates = list(business_days(last_date + timedelta(days=1), today, KR_HOLIDAYS | US_HOLIDAYS))
+        # today INCLUSIVE — when run before US close, fallback to most recent close works
+        target_dates = list(business_days(last_date + timedelta(days=1), today + timedelta(days=1), KR_HOLIDAYS | US_HOLIDAYS))
 
     if not target_dates:
         print(f'✓ 이미 최신 (마지막 entry: {last_date_str})')
