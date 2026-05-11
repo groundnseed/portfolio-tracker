@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
       { name:'KODEX200',   market:'kr', pct:10.0 },
       { name:'삼성전기',    market:'kr', pct:6.0 },
       { name:'OCI',        market:'kr', pct:5.0 },
-      { name:'SK하이닉스',  market:'kr', pct:5.5, tradeDate:'4/27', delta:1, note:'4.5→5.5 · 4/27 퇴근길' },
+      { name:'SK하이닉스',  market:'kr', pct:5.5 },
       { name:'삼성전자',    market:'kr', pct:4.0 },
       { name:'KB금융',     market:'kr', pct:4.0 },
       { name:'미래에셋',    market:'kr', pct:4.0 },
@@ -122,28 +122,36 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('subLine').textContent =
       `2026 봄학기 · 3/10 ~ ${todayLabel} · 확장포폴 제외 · 총 ${grandTotal.toFixed(1)}% (🇰🇷 ${krTotal.toFixed(1)}% + 🇺🇲 ${usTotal.toFixed(1)}%)`;
 
-    // ─── 마지막 변동 카드 (가장 최근 tradeDate 기준) ───
+    // ─── 최근 변동 (매수/매도 둘 다 지원) ───
+    const recentTrades = [
+      { date:'5/10', name:'현대차',   market:'kr', kind:'매수', delta:1, note:'3→4' },
+      { date:'5/10', name:'현대건설', market:'kr', kind:'매도', delta:2, note:'2→0 · 편출' }
+    ];
+
+    // ─── 마지막 변동 카드 (recentTrades 가장 최근 날짜 기준) ───
     const todayListEl = document.getElementById('todayList');
-    const datesWithTrades = [...new Set(holdings.filter(h => h.tradeDate).map(h => h.tradeDate))]
+    const datesWithTrades = [...new Set(recentTrades.map(t => t.date))]
       .sort((a,b) => {
         const [am,ad] = a.split('/').map(Number);
         const [bm,bd] = b.split('/').map(Number);
         return (bm*100+bd) - (am*100+ad);
       });
     const lastTradeDate = datesWithTrades[0] || todayLabel;
-    // "📅 마지막 변동 · {lastTradeDate}" 으로 제목 업데이트
     document.getElementById('todayDate').textContent = lastTradeDate;
-    const todayStocks = holdings.filter(h => h.tradeDate === lastTradeDate);
-    if (todayStocks.length > 0) {
-      todayStocks.forEach(s => {
-        const flag = s.market === 'kr' ? '🇰🇷' : '🇺🇲';
-        const time = s.market === 'kr' ? '오전 09:00 / 오후 15:20 KST' : '밤 22:30 / 새벽 04:55 KST (NY 09:30/15:55)';
+    const todayTrades = recentTrades.filter(t => t.date === lastTradeDate);
+    if (todayTrades.length > 0) {
+      todayTrades.forEach(t => {
+        const flag = t.market === 'kr' ? '🇰🇷' : '🇺🇲';
+        const time = t.market === 'kr' ? '오전 09:00 / 오후 15:20 KST' : '밤 22:30 / 새벽 04:55 KST (NY 09:30/15:55)';
+        const sign = t.kind === '매수' ? '+' : '−';
+        const color = t.kind === '매수' ? '#fbbf24' : '#e57373';
         const row = document.createElement('div');
         row.className = 'trade-row';
+        row.style.borderLeftColor = color;
         row.innerHTML =
           '<span class="trade-flag">' + flag + '</span>' +
-          '<span class="trade-ticker">' + s.name + '</span>' +
-          '<span class="trade-detail">매수 +' + s.delta + '%p (' + s.note + ')</span>' +
+          '<span class="trade-ticker" style="color:' + color + '">' + t.name + '</span>' +
+          '<span class="trade-detail">' + t.kind + ' ' + sign + t.delta + '%p (' + t.note + ')</span>' +
           '<span class="trade-time">' + time + '</span>';
         todayListEl.appendChild(row);
       });
