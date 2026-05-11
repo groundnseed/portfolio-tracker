@@ -1032,8 +1032,18 @@ document.addEventListener('DOMContentLoaded', function() {
       plugins: [srOverlay]
     });
 
-    document.getElementById('stockReturnTitle').textContent =
-      `종목별 현재 수익률 (${todayLabel}, ${stockReturns.length}종목)`;
+    // ─── 총 수익률 (비중 가중평균) ───
+    const validReturns = stockReturns.filter(s => s.basisPrice && s.currentPrice && s.pct > 0);
+    const totalWeight = validReturns.reduce((sum, s) => sum + s.pct, 0);
+    const weightedReturn = totalWeight > 0
+      ? validReturns.reduce((sum, s) => sum + s.pct * s.returnPct, 0) / totalWeight
+      : 0;
+    const returnColor = weightedReturn >= 0 ? '#7cc88a' : '#e57373';
+    const returnSign = weightedReturn >= 0 ? '+' : '';
+    document.getElementById('stockReturnTitle').innerHTML =
+      `종목별 현재 수익률 (${todayLabel}, ${stockReturns.length}종목) ` +
+      `<span style="color:${returnColor};font-size:18px;font-weight:800;margin-left:8px;">` +
+      `총 ${returnSign}${weightedReturn.toFixed(2)}%</span>`;
 
     // ═══════════════════════════════════════════════════
     // 📊 비중 vs 수익률 (사분면 버블)
