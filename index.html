@@ -93,7 +93,8 @@
   <div class="card">
     <div class="card-title">📈 종목별 비중·수익률 추이 (mini-charts)</div>
     <div style="text-align:center; color:#94a3b8; font-size:12px; margin:0 0 12px;">
-      각 종목 작은 차트 — <span style="color:hsl(220,75%,67%);">파란 선 = 비중(%)</span> · <span style="color:hsl(95,60%,60%);">초록 선 = 수익률(%)</span>
+      각 종목 작은 차트 — <span style="color:hsl(220,75%,67%);">파란 선 = 비중(%)</span> · <span style="color:hsl(95,60%,60%);">초록 선 = 수익률(%)</span><br>
+      <span style="font-size:10px;color:#64748b;">데이터: 3/9~5/12 daily · 빌드: 2026-05-13 07:03 KST</span>
     </div>
     <div id="perStockGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:10px;"></div>
   </div>
@@ -1072,6 +1073,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // 수익률 line: returnHistory 있으면 그걸로 라벨/데이터 통합, 없으면 선형 보간
         let xLabels, weightSeries, retSeries;
+        if (typeof console !== 'undefined') console.log('[mini-chart]', s.name, 'returnHistory length:', s.returnHistory ? s.returnHistory.length : 'undefined');
         if (s.returnHistory && s.returnHistory.length > 1) {
           xLabels = s.returnHistory.map(p => p.date);
           retSeries = s.returnHistory.map(p => p.r);
