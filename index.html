@@ -65,12 +65,29 @@
     <div class="chart-scroll"><div class="chart-box"><canvas id="stockReturnChart"></canvas></div></div>
   </div>
 
-  <div class="card">
+  <div class="card" id="bubble-card-v3">
+    <!-- v3-bubble-marker -->
     <div class="card-title">📊 비중 vs 수익률 (사분면)</div>
-    <div style="text-align:center; color:#6b7280; font-size:11px; margin-bottom:8px;">
-      X = 비중(%) · Y = 수익률(%) · 버블 크기 = 평가비중. 우상단 = 핵심 winner ⭐
+    <div style="text-align:center; color:#94a3b8; font-size:12px; margin:0 0 12px;">위치 = 순위 · 버블 크기 = 비중(%) · 색 = 수익률 그라데이션</div>
+    <div style="display:flex;gap:16px;align-items:stretch;">
+      <div style="width:120px;flex-shrink:0;display:flex;flex-direction:column;padding-top:12px;">
+        <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:8px;">수익률 (색)</div>
+        <div style="display:flex;gap:10px;align-items:stretch;height:280px;">
+          <div style="width:16px;border-radius:8px;background:linear-gradient(to bottom,hsl(335,88%,50%),hsl(350,80%,58%),hsl(8,78%,62%),hsl(28,78%,62%),hsl(45,70%,65%),hsl(70,55%,62%),hsl(95,55%,60%),hsl(135,50%,70%),hsl(195,40%,80%),hsl(220,78%,68%),hsl(220,90%,42%));"></div>
+          <div style="display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:#cbd5e1;">
+            <span>+150%</span><span>+100%</span><span>+50%</span><span>0%</span><span>-25%</span>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(148,163,184,0.15);">
+          <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:8px;">비중 (크기)</div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:9px;height:9px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>3%</span></div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:17px;height:17px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>5%</span></div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:22px;height:22px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>6%</span></div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:33px;height:33px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>10%</span></div>
+        </div>
+      </div>
+      <div class="chart-box-trend" style="flex:1;min-width:0;"><canvas id="bubbleChart"></canvas></div>
     </div>
-    <div class="chart-box-trend"><canvas id="bubbleChart"></canvas></div>
   </div>
 
   <div id="err"></div>
@@ -96,9 +113,9 @@ document.addEventListener('DOMContentLoaded', function() {
       { name:'삼성전기',    market:'kr', pct:6.0 },
       { name:'OCI',        market:'kr', pct:5.0 },
       { name:'SK하이닉스',  market:'kr', pct:5.5 },
-      { name:'삼성전자',    market:'kr', pct:4.0 },
+      { name:'삼성전자',    market:'kr', pct:5.0 },
       { name:'KB금융',     market:'kr', pct:4.0 },
-      { name:'미래에셋',    market:'kr', pct:4.0 },
+      { name:'미래에셋',    market:'kr', pct:5.0 },
       { name:'LS Elec',    market:'kr', pct:5.0 },
       { name:'두산에너',    market:'kr', pct:5.0 },
       { name:'현대차',      market:'kr', pct:4.0 },
@@ -109,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
       { name:'LRCX',       market:'us', pct:3.0 },
       { name:'VRT',        market:'us', pct:4.0 },
       { name:'CITY',       market:'us', pct:3.0 },
-      { name:'CAT',        market:'us', pct:4.0 },
+      { name:'CAT',        market:'us', pct:5.0 },
       { name:'LITE',       market:'us', pct:3.0 },
       { name:'SNDK',       market:'us', pct:3.0 },
       { name:'GOOGL',     market:'us', pct:4.0 }
@@ -838,187 +855,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // 🏷 종목별 현재 수익률 (막대 차트)
     // ═══════════════════════════════════════════════════
     const stockReturns = [
-    {
-        "ticker": "KRX:069500",
-        "name": "KODEX 200",
-        "market": "kr",
-        "pct": 10.0,
-        "basisPrice": 93065.0,
-        "currentPrice": 119100.0,
-        "returnPct": 27.98
-    },
-    {
-        "ticker": "KRX:009150",
-        "name": "삼성전기",
-        "market": "kr",
-        "pct": 6.0,
-        "basisPrice": 518233.33,
-        "currentPrice": 958000.0,
-        "returnPct": 84.86
-    },
-    {
-        "ticker": "KRX:010060",
-        "name": "OCI홀딩스",
-        "market": "kr",
-        "pct": 5.0,
-        "basisPrice": 208242.86,
-        "currentPrice": 332500.0,
-        "returnPct": 59.67
-    },
-    {
-        "ticker": "KRX:000660",
-        "name": "SK하이닉스",
-        "market": "kr",
-        "pct": 5.5,
-        "basisPrice": 1053700.0,
-        "currentPrice": 1835000.0,
-        "returnPct": 74.15
-    },
-    {
-        "ticker": "KRX:005930",
-        "name": "삼성전자",
-        "market": "kr",
-        "pct": 4.0,
-        "basisPrice": 203000.0,
-        "currentPrice": 279000.0,
-        "returnPct": 37.44
-    },
-    {
-        "ticker": "KRX:105560",
-        "name": "KB금융",
-        "market": "kr",
-        "pct": 4.0,
-        "basisPrice": 158450.0,
-        "currentPrice": 153600.0,
-        "returnPct": -3.06
-    },
-    {
-        "ticker": "KRX:034020",
-        "name": "두산에너빌리티",
-        "market": "kr",
-        "pct": 5.0,
-        "basisPrice": 108350.0,
-        "currentPrice": 125600.0,
-        "returnPct": 15.92
-    },
-    {
-        "ticker": "KRX:006800",
-        "name": "미래에셋증권",
-        "market": "kr",
-        "pct": 4.0,
-        "basisPrice": 69704.17,
-        "currentPrice": 74300.0,
-        "returnPct": 6.59
-    },
-    {
-        "ticker": "KRX:010120",
-        "name": "LS ELECTRIC",
-        "market": "kr",
-        "pct": 5.0,
-        "basisPrice": 186825.0,
-        "currentPrice": 289000.0,
-        "returnPct": 54.69
-    },
-    {
-        "ticker": "KRX:005380",
-        "name": "현대차",
-        "market": "kr",
-        "pct": 4.0,
-        "basisPrice": 540833.33,
-        "currentPrice": 646000.0,
-        "returnPct": 19.45
-    },
-    {
-        "ticker": "NYSEARCA:IWM",
-        "name": "iShares Russell 2000",
-        "market": "us",
-        "pct": 6.0,
-        "basisPrice": 268.58,
-        "currentPrice": 285.33,
-        "returnPct": 6.24
-    },
-    {
-        "ticker": "NASDAQ:INTC",
-        "name": "Intel",
-        "market": "us",
-        "pct": 6.0,
-        "basisPrice": 55.3,
-        "currentPrice": 129.44,
-        "returnPct": 134.07
-    },
-    {
-        "ticker": "NASDAQ:AVGO",
-        "name": "Broadcom",
-        "market": "us",
-        "pct": 5.0,
-        "basisPrice": 386.34,
-        "currentPrice": 428.43,
-        "returnPct": 10.89
-    },
-    {
-        "ticker": "NASDAQ:LRCX",
-        "name": "Lam Research",
-        "market": "us",
-        "pct": 3.0,
-        "basisPrice": 236.25,
-        "currentPrice": 296.05,
-        "returnPct": 25.31
-    },
-    {
-        "ticker": "NYSE:VRT",
-        "name": "Vertiv",
-        "market": "us",
-        "pct": 4.0,
-        "basisPrice": 279.35,
-        "currentPrice": 367.92,
-        "returnPct": 31.71
-    },
-    {
-        "ticker": "NYSE:C",
-        "name": "Citigroup",
-        "market": "us",
-        "pct": 3.0,
-        "basisPrice": 127.67,
-        "currentPrice": 125.85,
-        "returnPct": -1.43
-    },
-    {
-        "ticker": "NASDAQ:SNDK",
-        "name": "SanDisk",
-        "market": "us",
-        "pct": 3.0,
-        "basisPrice": 763.12,
-        "currentPrice": 1547.56,
-        "returnPct": 102.79
-    },
-    {
-        "ticker": "NYSE:CAT",
-        "name": "Caterpillar",
-        "market": "us",
-        "pct": 4.0,
-        "basisPrice": 785.06,
-        "currentPrice": 926.79,
-        "returnPct": 18.05
-    },
-    {
-        "ticker": "NASDAQ:LITE",
-        "name": "Lumentum",
-        "market": "us",
-        "pct": 3.0,
-        "basisPrice": 770.97,
-        "currentPrice": 1053.09,
-        "returnPct": 36.59
-    },
-    {
-        "ticker": "NASDAQ:GOOGL",
-        "name": "Alphabet A",
-        "market": "us",
-        "pct": 4.0,
-        "basisPrice": 363.757,
-        "currentPrice": 388.64,
-        "returnPct": 6.84
-    }
-];
+    {"ticker": "KRX:069500", "name": "KODEX 200", "market": "kr", "pct": 10.0, "basisPrice": 93065.0, "currentPrice": 119100.0, "returnPct": 27.98},
+    {"ticker": "KRX:009150", "name": "삼성전기", "market": "kr", "pct": 6.0, "basisPrice": 518233.33, "currentPrice": 958000.0, "returnPct": 84.86},
+    {"ticker": "KRX:010060", "name": "OCI홀딩스", "market": "kr", "pct": 5.0, "basisPrice": 208242.86, "currentPrice": 332500.0, "returnPct": 59.67},
+    {"ticker": "KRX:000660", "name": "SK하이닉스", "market": "kr", "pct": 5.5, "basisPrice": 1053700.0, "currentPrice": 1835000.0, "returnPct": 74.15},
+    {"ticker": "KRX:005930", "name": "삼성전자", "market": "kr", "pct": 5.0, "basisPrice": 203000.0, "currentPrice": 279000.0, "returnPct": 37.44},
+    {"ticker": "KRX:105560", "name": "KB금융", "market": "kr", "pct": 4.0, "basisPrice": 158450.0, "currentPrice": 153600.0, "returnPct": -3.06},
+    {"ticker": "KRX:034020", "name": "두산에너빌리티", "market": "kr", "pct": 5.0, "basisPrice": 108350.0, "currentPrice": 125600.0, "returnPct": 15.92},
+    {"ticker": "KRX:006800", "name": "미래에셋증권", "market": "kr", "pct": 5.0, "basisPrice": 69704.17, "currentPrice": 74300.0, "returnPct": 6.59},
+    {"ticker": "KRX:010120", "name": "LS ELECTRIC", "market": "kr", "pct": 5.0, "basisPrice": 186825.0, "currentPrice": 289000.0, "returnPct": 54.69},
+    {"ticker": "KRX:005380", "name": "현대차", "market": "kr", "pct": 4.0, "basisPrice": 540833.33, "currentPrice": 646000.0, "returnPct": 19.45},
+    {"ticker": "NYSEARCA:IWM", "name": "iShares Russell 2000", "market": "us", "pct": 6.0, "basisPrice": 268.58, "currentPrice": 285.33, "returnPct": 6.24},
+    {"ticker": "NASDAQ:INTC", "name": "Intel", "market": "us", "pct": 6.0, "basisPrice": 55.3, "currentPrice": 129.44, "returnPct": 134.07},
+    {"ticker": "NASDAQ:AVGO", "name": "Broadcom", "market": "us", "pct": 5.0, "basisPrice": 386.34, "currentPrice": 428.43, "returnPct": 10.89},
+    {"ticker": "NASDAQ:LRCX", "name": "Lam Research", "market": "us", "pct": 3.0, "basisPrice": 236.25, "currentPrice": 296.05, "returnPct": 25.31},
+    {"ticker": "NYSE:VRT", "name": "Vertiv", "market": "us", "pct": 4.0, "basisPrice": 279.35, "currentPrice": 367.92, "returnPct": 31.71},
+    {"ticker": "NYSE:C", "name": "Citigroup", "market": "us", "pct": 3.0, "basisPrice": 127.67, "currentPrice": 125.85, "returnPct": -1.43},
+    {"ticker": "NASDAQ:SNDK", "name": "SanDisk", "market": "us", "pct": 3.0, "basisPrice": 763.12, "currentPrice": 1547.56, "returnPct": 102.79},
+    {"ticker": "NYSE:CAT", "name": "Caterpillar", "market": "us", "pct": 5.0, "basisPrice": 785.06, "currentPrice": 926.79, "returnPct": 18.05},
+    {"ticker": "NASDAQ:LITE", "name": "Lumentum", "market": "us", "pct": 3.0, "basisPrice": 770.97, "currentPrice": 1053.09, "returnPct": 36.59},
+    {"ticker": "NASDAQ:GOOGL", "name": "Alphabet A", "market": "us", "pct": 4.0, "basisPrice": 363.757, "currentPrice": 388.64, "returnPct": 6.84}
+    ];
 
     stockReturns.sort((a, b) => {
       if (a.market !== b.market) return a.market === 'kr' ? -1 : 1;
@@ -1120,105 +977,34 @@ document.addEventListener('DOMContentLoaded', function() {
       `총 ${returnSign}${weightedReturn.toFixed(2)}%</span>`;
 
     // ═══════════════════════════════════════════════════
-    // 📊 비중 vs 수익률 (사분면 버블)
+    // 📊 비중 vs 수익률 (v3 — 순위·그라데이션·라벨)
     // ═══════════════════════════════════════════════════
-    const validStocks = stockReturns.filter(s => s.basisPrice && s.currentPrice && s.pct > 0);
-    const bubbleColor = r => {
-      if (r > 0) {
-        const t = Math.min(1, r/100);
-        return `rgb(${Math.round(195-t*155)},${Math.round(180-t*40)},${Math.round(150-t*60)})`;
-      } else if (r < 0) {
-        const t = Math.min(1, Math.abs(r)/30);
-        return `rgb(${Math.round(220+t*15)},${Math.round(140-t*80)},${Math.round(140-t*80)})`;
-      }
-      return '#888';
-    };
-    const bubbleData = validStocks.map(s => ({
-      x: s.pct,
-      y: s.returnPct,
-      r: Math.max(5, Math.sqrt(s.pct/100)*40 + 5),
-      name: s.name,
-      market: s.market
-    }));
-    const bubbleColors = validStocks.map(s => bubbleColor(s.returnPct));
-
-    new Chart(document.getElementById('bubbleChart').getContext('2d'), {
-      type: 'bubble',
-      data: {
-        datasets: [{
-          data: bubbleData,
-          backgroundColor: bubbleColors,
-          borderColor: '#0b1424',
-          borderWidth: 1.5
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        layout: { padding: 24 },
-        plugins: {
-          legend: { display: false },
-          datalabels: { display: false },
-          tooltip: {
-            backgroundColor: '#0b1424', titleColor: '#fbbf24', bodyColor: '#e4e7ef',
-            callbacks: {
-              label: c => [
-                (c.raw.market === 'kr' ? '🇰🇷 ' : '🇺🇲 ') + c.raw.name,
-                `비중: ${c.raw.x.toFixed(1)}%`,
-                `수익률: ${c.raw.y >= 0 ? '+' : ''}${c.raw.y.toFixed(2)}%`
-              ]
-            }
-          }
-        },
-        scales: {
-          x: {
-            title: { display: true, text: '비중 (%)', color: '#b8c5dc', font: { size: 11 } },
-            min: 0, max: 12,
-            ticks: { color: '#b8c5dc', font: { size: 11 }, callback: v => v + '%' },
-            grid: { color: '#1e2a44' }
-          },
-          y: {
-            title: { display: true, text: '수익률 (%)', color: '#b8c5dc', font: { size: 11 } },
-            min: -25, max: 110,
-            ticks: { color: '#b8c5dc', font: { size: 11 }, callback: v => (v>=0?'+':'')+v+'%' },
-            grid: { color: '#1e2a44' }
-          }
-        }
-      },
-      plugins: [{
-        id: 'bubbleQuadrants',
-        afterDraw(chart) {
-          const { ctx, chartArea: ca, scales: { x, y } } = chart;
-          const x0 = x.getPixelForValue(0);
-          const y0 = y.getPixelForValue(0);
-          ctx.save();
-          ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-          ctx.setLineDash([4,4]);
-          ctx.beginPath();
-          ctx.moveTo(ca.left, y0); ctx.lineTo(ca.right, y0);
-          ctx.moveTo(x0, ca.top); ctx.lineTo(x0, ca.bottom);
-          ctx.stroke();
-          ctx.restore();
-          ctx.save();
-          ctx.font = '11px "Noto Sans KR", sans-serif';
-          ctx.fillStyle = 'rgba(184,197,220,0.55)';
-          ctx.fillText('⭐ 핵심 winner', ca.right - 105, ca.top + 16);
-          ctx.fillText('📈 추가매수 후보', ca.left + 8, ca.top + 16);
-          ctx.fillText('⚠️ 위험', ca.right - 60, ca.bottom - 10);
-          ctx.fillText('✂️ 컷 후보', ca.left + 8, ca.bottom - 10);
-          ctx.restore();
-          ctx.save();
-          ctx.font = 'bold 11px "Noto Sans KR", sans-serif';
-          ctx.fillStyle = '#e4e7ef';
-          ctx.textAlign = 'center';
-          chart.data.datasets[0].data.forEach(p => {
-            const px = x.getPixelForValue(p.x);
-            const py = y.getPixelForValue(p.y);
-            if (p.r > 11) ctx.fillText(p.name, px, py + 3);
-          });
-          ctx.restore();
-        }
-      }]
-    });
+    (function renderBubbleV3(){
+      function dispName(s){ if(s.ticker && /^(NASDAQ|NYSE|AMEX|NMS):/i.test(s.ticker)){ const t=s.ticker.split(':')[1]; return t==='C'?'CITI':t; } return s.name||s.ticker||'?'; }
+      const _raw = stockReturns.filter(s=>s.pct>0 && s.basisPrice).map(s=>({name:dispName(s),w:s.pct,r:+(s.returnPct||0).toFixed(2)}));
+      if(!_raw.length) return;
+      const N = _raw.length;
+      function rankIdx(a,k){ const so=a.map((d,i)=>({d,i})).sort((x,y)=>x.d[k]-y.d[k]||x.i-y.i); const r=new Array(a.length); so.forEach((s,kk)=>{r[s.i]=kk}); return r; }
+      const xR=rankIdx(_raw,'w'), yR=rankIdx(_raw,'r');
+      function bsize(w){ return 6 + Math.max(0,w-2)*3.4; }
+      const stops=[{v:-25,h:220,s:90,l:42},{v:-2,h:220,s:78,l:68},{v:5,h:195,s:40,l:80},{v:25,h:135,s:50,l:70},{v:50,h:95,s:55,l:60},{v:65,h:70,s:55,l:62},{v:80,h:45,s:70,l:65},{v:95,h:28,s:78,l:62},{v:110,h:8,s:78,l:62},{v:140,h:350,s:80,l:58},{v:200,h:335,s:88,l:50}];
+      function interp(r){ if(r<=stops[0].v) return Object.assign({},stops[0]); if(r>=stops[stops.length-1].v) return Object.assign({},stops[stops.length-1]); let a=stops[0],b=stops[1]; for(let i=0;i<stops.length-1;i++){if(r>=stops[i].v&&r<=stops[i+1].v){a=stops[i];b=stops[i+1];break;}} const t=(r-a.v)/(b.v-a.v); let h0=a.h,h1=b.h; if(Math.abs(h1-h0)>180){ if(h1<h0)h1+=360; else h0+=360; } return {h:((h0+(h1-h0)*t)+360)%360, s:a.s+(b.s-a.s)*t, l:a.l+(b.l-a.l)*t}; }
+      function rcol(r){ const o=interp(r); return 'hsl('+o.h.toFixed(1)+','+o.s.toFixed(1)+'%,'+o.l.toFixed(1)+'%)'; }
+      function llabel(r){ const o=interp(r); return 'hsl('+o.h.toFixed(1)+','+Math.max(o.s-10,40).toFixed(1)+'%,'+Math.min(o.l+18,86).toFixed(1)+'%)'; }
+      const pts=_raw.map((d,i)=>{ const c=rcol(d.r); return {x:xR[i],y:yR[i],r:bsize(d.w),_name:d.name,_w:d.w,_r:d.r,_anchor:'top',backgroundColor:c,borderColor:c}; });
+      const xMid=(N-1)/2, yMid=(N-1)/2;
+      for(const p of pts){ const dx=p.x-xMid, dy=p.y-yMid; const rE=p.x>=N-1.5, lE=p.x<=0.5, tE=p.y>=N-1.5, bE=p.y<=0.5; if(rE&&!tE&&!bE) p._anchor='left'; else if(lE&&!tE&&!bE) p._anchor='right'; else if(tE) p._anchor='bottom'; else if(bE) p._anchor='top'; else if(Math.abs(dy)>=Math.abs(dx)) p._anchor=dy>=0?'top':'bottom'; else p._anchor=dx>=0?'right':'left'; }
+      for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){ const p=pts[i],q=pts[j]; if(Math.hypot(p.x-q.x,p.y-q.y)<2.5 && p._anchor===q._anchor){ const dx=q.x-p.x, dy=q.y-p.y; if(Math.abs(dy)>=Math.abs(dx)){ if(dy>=0){p._anchor='bottom';q._anchor='top';} else {p._anchor='top';q._anchor='bottom';} } else { if(dx>=0){p._anchor='left';q._anchor='right';} else {p._anchor='right';q._anchor='left';} } } }
+      const sW=_raw.slice().sort((a,b)=>a.w-b.w).map(d=>d.w);
+      const sR=_raw.slice().sort((a,b)=>a.r-b.r).map(d=>d.r);
+      function zeroRank(){ if(sR[0]>=0) return -0.5; if(sR[sR.length-1]<0) return sR.length-0.5; for(let i=0;i<sR.length;i++) if(sR[i]>=0) return i-0.5; return null; }
+      const qbg={id:'qbg',beforeDatasetsDraw(c){ const ctx=c.ctx,ca=c.chartArea,s=c.scales; if(!ca) return; const px=s.x.getPixelForValue(xMid), py=s.y.getPixelForValue(yMid); ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.10)'; ctx.lineWidth=1; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(px,ca.top); ctx.lineTo(px,ca.bottom); ctx.moveTo(ca.left,py); ctx.lineTo(ca.right,py); ctx.stroke(); ctx.restore(); ctx.save(); ctx.font='600 11px system-ui'; ctx.fillStyle='rgba(244,114,182,0.75)'; ctx.textAlign='right'; ctx.textBaseline='top'; ctx.fillText('⭐ 핵심 winner',ca.right-8,ca.top+8); ctx.fillStyle='rgba(190,242,100,0.75)'; ctx.textAlign='left'; ctx.fillText('🛒 추가매수 후보',ca.left+8,ca.top+8); ctx.fillStyle='rgba(248,113,113,0.85)'; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText('⚠️ 위험',ca.right-8,ca.bottom-8); ctx.fillStyle='rgba(248,113,113,0.85)'; ctx.textAlign='left'; ctx.fillText('✂️ 컷 후보',ca.left+8,ca.bottom-8); ctx.restore(); }};
+      const zl={id:'zl',
+        beforeDatasetsDraw(c){ const ctx=c.ctx,ca=c.chartArea,s=c.scales; if(!ca) return; const zr=zeroRank(); if(zr==null) return; const zy=s.y.getPixelForValue(zr); if(zy>=ca.bottom) return; ctx.save(); const g=ctx.createLinearGradient(0,zy,0,ca.bottom); g.addColorStop(0,'rgba(220,38,38,0.04)'); g.addColorStop(0.5,'rgba(220,38,38,0.10)'); g.addColorStop(1,'rgba(220,38,38,0.18)'); ctx.fillStyle=g; ctx.fillRect(ca.left,zy,ca.right-ca.left,ca.bottom-zy); ctx.restore(); },
+        afterDatasetsDraw(c){ const ctx=c.ctx,ca=c.chartArea,s=c.scales; if(!ca) return; const zr=zeroRank(); if(zr==null) return; const zy=s.y.getPixelForValue(zr); ctx.save(); ctx.strokeStyle='rgba(148,163,184,0.35)'; ctx.lineWidth=1; ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(ca.left,zy); ctx.lineTo(ca.right,zy); ctx.stroke(); ctx.setLineDash([]); ctx.font='700 11px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillStyle='rgba(203,213,225,0.9)'; ctx.fillText('0%',ca.left+6,zy); ctx.font='600 10px system-ui'; ctx.textBaseline='bottom'; ctx.fillStyle='hsl(95,55%,75%)'; ctx.fillText('▲ 수익',ca.left+6,zy-4); ctx.textBaseline='top'; ctx.fillStyle='hsl(0,75%,75%)'; ctx.fillText('▼ 손실 ⚠️',ca.left+6,zy+4); ctx.restore(); }};
+      const lbl={id:'lbl',afterDatasetsDraw(c){ const ctx=c.ctx,ps=c.getDatasetMeta(0).data; ctx.save(); for(let i=0;i<ps.length;i++){ const p=ps[i],d=pts[i],r=(p.options&&p.options.radius)||d.r; let lx=p.x,ly=p.y,al='center',bl='bottom'; const g=7; if(d._anchor==='top'){ ly=p.y-r-g; bl='bottom'; al='center'; } if(d._anchor==='bottom'){ ly=p.y+r+g; bl='top'; al='center'; } if(d._anchor==='right'){ lx=p.x+r+g; al='left'; bl='middle'; } if(d._anchor==='left'){ lx=p.x-r-g; al='right'; bl='middle'; } ctx.textAlign=al; ctx.textBaseline=bl; ctx.font='700 13px -apple-system,system-ui,sans-serif'; ctx.strokeStyle='rgba(15,23,42,0.92)'; ctx.lineWidth=4; ctx.strokeText(d._name,lx,ly); ctx.fillStyle='#f8fafc'; ctx.fillText(d._name,lx,ly); ctx.font='600 11px system-ui'; const ySub=d._anchor==='top'?ly-14:(d._anchor==='bottom'?ly+14:ly+13); const wStr=d._w+'%', sep=' / ', rStr=(d._r>=0?'+':'')+d._r+'%'; const rColor=llabel(d._r); const wW=ctx.measureText(wStr).width, sW2=ctx.measureText(sep).width, rW=ctx.measureText(rStr).width; const total=wW+sW2+rW; let sx; if(al==='center') sx=lx-total/2; else if(al==='left') sx=lx; else sx=lx-total; ctx.textAlign='left'; ctx.strokeStyle='rgba(15,23,42,0.92)'; ctx.lineWidth=3; ctx.strokeText(wStr,sx,ySub); ctx.strokeText(sep,sx+wW,ySub); ctx.strokeText(rStr,sx+wW+sW2,ySub); ctx.fillStyle='#ffffff'; ctx.fillText(wStr,sx,ySub); ctx.fillStyle='rgba(203,213,225,0.65)'; ctx.fillText(sep,sx+wW,ySub); ctx.fillStyle=rColor; ctx.fillText(rStr,sx+wW+sW2,ySub); } ctx.restore(); }};
+      new Chart(document.getElementById('bubbleChart').getContext('2d'),{type:'bubble',data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.y,r:p.r})),backgroundColor:pts.map(p=>p.backgroundColor),borderColor:pts.map(p=>p.borderColor),borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:36,right:50,bottom:12,left:12}},plugins:{legend:{display:false},datalabels:{display:false},tooltip:{callbacks:{label:c=>{const d=pts[c.dataIndex]; return d._name+': 비중 '+d._w+'%, 수익률 '+(d._r>=0?'+':'')+d._r+'%';}}}},scales:{x:{type:'linear',title:{display:true,text:'← 비중 적음   |   비중 많음 →',color:'#94a3b8',font:{size:12}},min:-0.7,max:N-0.3,ticks:{color:'#94a3b8',font:{size:10},stepSize:1,callback:v=>{const r=Math.round(v); if(r<0||r>=N) return ''; if(r%3!==0&&r!==N-1) return ''; return sW[r]!=null?sW[r]+'%':'';}},grid:{color:'rgba(148,163,184,0.06)',drawBorder:false}},y:{type:'linear',title:{display:false},min:-0.7,max:N-0.3,ticks:{color:'#94a3b8',font:{size:10},stepSize:1,callback:v=>{const r=Math.round(v); if(r<0||r>=N) return ''; if(r%3!==0&&r!==N-1) return ''; const x=sR[r]; return x!=null?(x>=0?'+':'')+x+'%':'';}},grid:{color:'rgba(148,163,184,0.06)',drawBorder:false}}}},plugins:[qbg,zl,lbl]});
+    })();
 
   } catch (e) {
     document.getElementById('err').innerHTML =
