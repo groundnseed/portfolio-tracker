@@ -1,0 +1,36 @@
+name: fetch per-stock daily returns
+on:
+  schedule:
+    # 매일 23:00 UTC (08:00 KST) — KR/US 마감 후
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: '시작 날짜 (YYYY-MM-DD)'
+        required: false
+        default: '2026-03-10'
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fetch per-stock returns
+        run: |
+          START="${{ github.event.inputs.start_date || '2026-03-10' }}"
+          python3 scripts/fetch_per_stock_returns.py --start "$START"
+      - name: Commit & push
+        run: |
+          git config user.email "auto-sync@cowork.local"
+          git config user.name "github-actions"
+          git add index.html
+          git diff --cached --quiet || git commit -m "data: per-stock returnHistory 갱신 ($(date -u +%Y-%m-%d))"
+          git push

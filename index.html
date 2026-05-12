@@ -1070,19 +1070,37 @@ document.addEventListener('DOMContentLoaded', function() {
         card.appendChild(wrap);
         grid.appendChild(card);
 
-        // 수익률 line: 0% → currentReturn 선형 보간 (per-stock daily data 없음)
-        const N = weightDates.length;
-        const retSeries = weightDates.map((d, i) => {
-          const t = N > 1 ? i / (N - 1) : 1;
-          return +(t * s.current_return).toFixed(2);
-        });
+        // 수익률 line: returnHistory 있으면 그걸로 라벨/데이터 통합, 없으면 선형 보간
+        let xLabels, weightSeries, retSeries;
+        if (s.returnHistory && s.returnHistory.length > 1) {
+          xLabels = s.returnHistory.map(p => p.date);
+          retSeries = s.returnHistory.map(p => p.r);
+          // 비중은 weightDates별 값을 returnHistory 날짜에 forward-fill
+          function parseDate(dStr) { const [m, d] = dStr.split('/').map(Number); return m * 100 + d; }
+          weightSeries = xLabels.map(d => {
+            const dKey = parseDate(d);
+            let w = s.weights[0];
+            for (let i = 0; i < weightDates.length; i++) {
+              if (parseDate(weightDates[i]) <= dKey) w = s.weights[i];
+            }
+            return w;
+          });
+        } else {
+          xLabels = weightDates;
+          weightSeries = s.weights;
+          const N = weightDates.length;
+          retSeries = weightDates.map((d, i) => {
+            const t = N > 1 ? i / (N - 1) : 1;
+            return +(t * s.current_return).toFixed(2);
+          });
+        }
 
         new Chart(canvas.getContext('2d'), {
           type: 'line',
           data: {
-            labels: weightDates,
+            labels: xLabels,
             datasets: [
-              { label: '비중', data: s.weights, borderColor: 'hsl(220, 75%, 67%)', backgroundColor: 'hsla(220, 75%, 67%, 0.15)', borderWidth: 2.5, pointRadius: 3, tension: 0.25, yAxisID: 'yW', fill: false },
+              { label: '비중', data: weightSeries, borderColor: 'hsl(220, 75%, 67%)', backgroundColor: 'hsla(220, 75%, 67%, 0.15)', borderWidth: 2.5, pointRadius: 3, tension: 0.25, yAxisID: 'yW', fill: false },
               { label: '수익률', data: retSeries, borderColor: 'hsl(95, 60%, 60%)', backgroundColor: 'hsla(95, 60%, 60%, 0.15)', borderWidth: 2, borderDash: [4, 3], pointRadius: 2, tension: 0, yAxisID: 'yR', fill: false }
             ]
           },
