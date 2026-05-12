@@ -91,19 +91,11 @@
   </div>
 
   <div class="card">
-    <div class="card-title">📈 종목별 비중 변화 (5/1 → 5/12)</div>
+    <div class="card-title">📈 종목별 비중·수익률 추이 (mini-charts)</div>
     <div style="text-align:center; color:#94a3b8; font-size:12px; margin:0 0 12px;">
-      각 종목의 비중 시계열. 범례 클릭으로 토글. 한국 = 따뜻한 톤, 미국 = 시원한 톤
+      각 종목 작은 차트 — <span style="color:hsl(220,75%,67%);">파란 선 = 비중(%)</span> · <span style="color:hsl(95,60%,60%);">초록 선 = 수익률(%)</span>
     </div>
-    <div class="chart-box-trend" style="height:450px;"><canvas id="perStockWeightChart"></canvas></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">📊 종목별 수익률 비교 (현재 스냅샷)</div>
-    <div style="text-align:center; color:#94a3b8; font-size:12px; margin:0 0 12px;">
-      basis가 → 현재 누적 수익률. 색은 수익률 그라데이션. 점 = 매수일 진입가 (0%)
-    </div>
-    <div class="chart-box-trend" style="height:480px;"><canvas id="perStockReturnChart"></canvas></div>
+    <div id="perStockGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:10px;"></div>
   </div>
 
   <div id="err"></div>
@@ -1052,110 +1044,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
     // ═══════════════════════════════════════════════════
-    // 📈 종목별 비중 변화 (line chart, 20 종목)
+
     // ═══════════════════════════════════════════════════
-    (function renderWeightLines(){
-      const cv = document.getElementById('perStockWeightChart');
-      if (!cv || typeof perStockHistory === 'undefined') return;
-      // 한국=따뜻한, 미국=시원한 HSL 톤
-      const krHues = [15, 25, 35, 45, 350, 340, 330, 5, 20, 10];
-      const usHues = [200, 210, 190, 220, 175, 160, 230, 195, 240, 180];
-      const krColors = []; const usColors = [];
-      let kr_i = 0, us_i = 0;
-      const datasets = perStockHistory.map(s => {
-        let color;
-        if (s.market === 'kr') {
-          color = `hsl(${krHues[kr_i % krHues.length]}, 65%, 60%)`;
-          kr_i++;
-        } else {
-          color = `hsl(${usHues[us_i % usHues.length]}, 60%, 60%)`;
-          us_i++;
-        }
-        return {
-          label: s.name,
-          data: s.weights,
-          borderColor: color,
-          backgroundColor: color,
-          borderWidth: 2,
-          pointRadius: 3,
-          pointHoverRadius: 5,
-          tension: 0.2,
-          fill: false
-        };
-      });
-      new Chart(cv.getContext('2d'), {
-        type: 'line',
-        data: { labels: weightDates, datasets: datasets },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          interaction: { mode: 'nearest', intersect: false },
-          plugins: {
-            legend: { position: 'right', labels: { color: '#cbd5e1', font: { size: 11 }, boxWidth: 12, padding: 6 } },
-            datalabels: { display: false },
-            tooltip: { callbacks: { label: c => c.dataset.label + ': ' + c.raw + '%' } }
+    // 📈 종목별 mini-chart 그리드 (비중·수익률 2 line)
+    // ═══════════════════════════════════════════════════
+    (function renderMiniCharts(){
+      const grid = document.getElementById('perStockGrid');
+      if (!grid || typeof perStockHistory === 'undefined') return;
+      function tickerOf(s){ if(s.ticker && /^(NASDAQ|NYSE|NYSEARCA|AMEX|NMS):/i.test(s.ticker)){ const t=s.ticker.split(':')[1]; return t==='C'?'CITI':t; } return s.name; }
+      const sorted = perStockHistory.slice().sort((a,b)=>b.current_return - a.current_return);
+      sorted.forEach(s => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background:#0f172a; border:1px solid rgba(148,163,184,0.15); border-radius:10px; padding:10px;';
+        const title = document.createElement('div');
+        title.style.cssText = 'font-size:12px; font-weight:700; color:#f8fafc; margin-bottom:4px; display:flex; justify-content:space-between; align-items:baseline; gap:6px;';
+        const flag = s.market === 'kr' ? '🇰🇷' : '🇺🇲';
+        const dn = tickerOf(s);
+        const rSign = s.current_return >= 0 ? '+' : '';
+        title.innerHTML = '<span>' + flag + ' ' + dn + '</span>' + '<span style="font-size:10px; font-weight:600; color:#94a3b8;">' + s.current_pct + '% / ' + rSign + s.current_return.toFixed(1) + '%</span>';
+        card.appendChild(title);
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative; height:130px;';
+        const canvas = document.createElement('canvas');
+        wrap.appendChild(canvas);
+        card.appendChild(wrap);
+        grid.appendChild(card);
+
+        // 수익률 line: 0% → currentReturn 선형 보간 (per-stock daily data 없음)
+        const N = weightDates.length;
+        const retSeries = weightDates.map((d, i) => {
+          const t = N > 1 ? i / (N - 1) : 1;
+          return +(t * s.current_return).toFixed(2);
+        });
+
+        new Chart(canvas.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: weightDates,
+            datasets: [
+              { label: '비중', data: s.weights, borderColor: 'hsl(220, 75%, 67%)', backgroundColor: 'hsla(220, 75%, 67%, 0.15)', borderWidth: 2.5, pointRadius: 3, tension: 0.25, yAxisID: 'yW', fill: false },
+              { label: '수익률', data: retSeries, borderColor: 'hsl(95, 60%, 60%)', backgroundColor: 'hsla(95, 60%, 60%, 0.15)', borderWidth: 2, borderDash: [4, 3], pointRadius: 2, tension: 0, yAxisID: 'yR', fill: false }
+            ]
           },
-          scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.06)' } },
-            y: {
-              title: { display: true, text: '비중 (%)', color: '#94a3b8' },
-              min: 0, max: 12,
-              ticks: { color: '#94a3b8', callback: v => v + '%' },
-              grid: { color: 'rgba(148,163,184,0.06)' }
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'nearest', intersect: false },
+            plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { callbacks: { label: c => c.dataset.label + ': ' + c.raw + '%' } } },
+            scales: {
+              x: { ticks: { color: '#94a3b8', font: { size: 9 } }, grid: { display: false } },
+              yW: { position: 'left', ticks: { color: 'hsl(220, 75%, 67%)', font: { size: 9 }, callback: v => v + '%' }, grid: { color: 'rgba(148,163,184,0.05)' }, beginAtZero: true, suggestedMax: Math.max.apply(null, s.weights) + 2 },
+              yR: { position: 'right', ticks: { color: 'hsl(95, 60%, 60%)', font: { size: 9 }, callback: v => (v>=0?'+':'')+v+'%' }, grid: { display: false } }
             }
           }
-        }
+        });
       });
     })();
 
-    // ═══════════════════════════════════════════════════
-    // 📊 종목별 수익률 비교 (basis → 현재)
-    // ═══════════════════════════════════════════════════
-    (function renderReturnLines(){
-      const cv = document.getElementById('perStockReturnChart');
-      if (!cv || typeof perStockHistory === 'undefined') return;
-      // 같은 그라데이션 색
-      const stops = [{v:-25,h:220,s:90,l:42},{v:-2,h:220,s:78,l:68},{v:5,h:195,s:40,l:80},{v:25,h:135,s:50,l:70},{v:50,h:95,s:55,l:60},{v:65,h:70,s:55,l:62},{v:80,h:45,s:70,l:65},{v:95,h:28,s:78,l:62},{v:110,h:8,s:78,l:62},{v:140,h:350,s:80,l:58},{v:200,h:335,s:88,l:50}];
-      function interp(r){ if(r<=stops[0].v)return Object.assign({},stops[0]); if(r>=stops[stops.length-1].v)return Object.assign({},stops[stops.length-1]); let a=stops[0],b=stops[1]; for(let i=0;i<stops.length-1;i++){if(r>=stops[i].v&&r<=stops[i+1].v){a=stops[i];b=stops[i+1];break;}} const t=(r-a.v)/(b.v-a.v); let h0=a.h,h1=b.h; if(Math.abs(h1-h0)>180){if(h1<h0)h1+=360;else h0+=360;} return{h:((h0+(h1-h0)*t)+360)%360,s:a.s+(b.s-a.s)*t,l:a.l+(b.l-a.l)*t}; }
-      function rcol(r){const o=interp(r);return 'hsl('+o.h.toFixed(1)+','+o.s.toFixed(1)+'%,'+o.l.toFixed(1)+'%)';}
-      function tickerOf(s){ if(s.ticker&&/^(NASDAQ|NYSE|NYSEARCA|AMEX|NMS):/i.test(s.ticker)){const t=s.ticker.split(':')[1]; return t==='C'?'CITI':t;} return s.name; }
-      // datasets: 각 종목 2점 (시작 0%, 현재 returnPct)
-      const sorted = perStockHistory.slice().sort((a,b)=>b.current_return - a.current_return);
-      const datasets = sorted.map(s => {
-        const c = rcol(s.current_return);
-        return {
-          label: tickerOf(s),
-          data: [{x: '진입', y: 0}, {x: '현재', y: s.current_return}],
-          borderColor: c,
-          backgroundColor: c,
-          borderWidth: 2.5,
-          pointRadius: [4, 6],
-          pointHoverRadius: [6, 9],
-          tension: 0,
-          fill: false
-        };
-      });
-      new Chart(cv.getContext('2d'), {
-        type: 'line',
-        data: { labels: ['진입(basis)', '현재'], datasets: datasets },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          interaction: { mode: 'nearest', intersect: false },
-          plugins: {
-            legend: { position: 'right', labels: { color: '#cbd5e1', font: { size: 11 }, boxWidth: 12, padding: 6 } },
-            datalabels: { display: false },
-            tooltip: { callbacks: { label: c => c.dataset.label + ': ' + (c.raw.y>=0?'+':'') + c.raw.y.toFixed(2) + '%' } }
-          },
-          scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.06)' } },
-            y: {
-              title: { display: true, text: '수익률 (%)', color: '#94a3b8' },
-              ticks: { color: '#94a3b8', callback: v => (v>=0?'+':'') + v + '%' },
-              grid: { color: 'rgba(148,163,184,0.06)' }
-            }
-          }
-        }
-      });
-    })();
 
   } catch (e) {
     document.getElementById('err').innerHTML =
