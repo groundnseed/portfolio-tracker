@@ -20,12 +20,14 @@ KR_TICKERS = {
     'KRX:000660': '000660.KS', 'KRX:005930': '005930.KS', 'KRX:105560': '105560.KS',
     'KRX:034020': '034020.KS', 'KRX:006800': '006800.KS', 'KRX:010120': '010120.KS',
     'KRX:000720': '000720.KS', 'KRX:005380': '005380.KS',
+    'KRX:064400': '064400.KS',
 }
 US_TICKERS = {
     'NYSEARCA:IWM': 'IWM', 'NASDAQ:INTC': 'INTC', 'NASDAQ:AVGO': 'AVGO',
     'NASDAQ:LRCX': 'LRCX', 'NYSE:VRT': 'VRT', 'NYSE:C': 'C',
     'NASDAQ:SNDK': 'SNDK', 'NYSE:CAT': 'CAT', 'NASDAQ:LITE': 'LITE',
     'NASDAQ:GOOGL': 'GOOGL',
+    'NASDAQ:DDOG': 'DDOG', 'NYSE:BE': 'BE', 'NASDAQ:ARM': 'ARM', 'NASDAQ:CSCO': 'CSCO',
 }
 
 def fetch_close_history(yahoo_symbol, start: date, end: date):
