@@ -1358,7 +1358,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const flag = s.market === 'kr' ? '🇰🇷' : '🇺🇲';
         const dn = tickerOf(s);
         const rSign = s.current_return >= 0 ? '+' : '';
-        title.innerHTML = '<span>' + flag + ' ' + dn + '</span>' + '<span style="font-size:10px; font-weight:600; color:#94a3b8;">' + s.current_pct + '% / ' + rSign + s.current_return.toFixed(1) + '%</span>';
+        const lastProfit = (s.profit_history && s.profit_history.length) ? s.profit_history[s.profit_history.length-1].p : null;
+        const profitStr = lastProfit != null ? ('<span style="font-size:10px; font-weight:700; color:' + (lastProfit>=0?'hsl(345,75%,68%)':'hsl(220,75%,70%)') + ';">' + (lastProfit>=0?'+':'') + Math.round(lastProfit/10000) + '만</span>') : '';
+        title.innerHTML = '<span>' + flag + ' ' + dn + '</span>' + '<span style="font-size:10px; font-weight:600; color:#94a3b8;">' + s.current_pct + '% / ' + rSign + s.current_return.toFixed(1) + '%</span>' + profitStr;
         card.appendChild(title);
         const wrap = document.createElement('div');
         wrap.style.cssText = 'position:relative; height:130px;';
@@ -1368,11 +1370,15 @@ document.addEventListener('DOMContentLoaded', function() {
         grid.appendChild(card);
 
         // 수익률 line: returnHistory 있으면 그걸로 라벨/데이터 통합, 없으면 선형 보간
-        let xLabels, weightSeries, retSeries;
+        let xLabels, weightSeries, retSeries, profitSeries;
         if (typeof console !== 'undefined') console.log('[mini-chart]', s.name, 'returnHistory length:', s.returnHistory ? s.returnHistory.length : 'undefined');
         if (s.returnHistory && s.returnHistory.length > 1) {
           xLabels = s.returnHistory.map(p => p.date);
           retSeries = s.returnHistory.map(p => p.r);
+          // 수익금: profit_history 있으면 그것, 없으면 0
+          const phMap = {};
+          if (s.profit_history) s.profit_history.forEach(x => phMap[x.date] = x.p);
+          profitSeries = xLabels.map(d => phMap[d] != null ? Math.round(phMap[d]/10000) : null);
           // 비중은 weightDates별 값을 returnHistory 날짜에 forward-fill
           function parseDate(dStr) { const [m, d] = dStr.split('/').map(Number); return m * 100 + d; }
           weightSeries = xLabels.map(d => {
@@ -1391,6 +1397,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const t = N > 1 ? i / (N - 1) : 1;
             return +(t * s.current_return).toFixed(2);
           });
+          profitSeries = retSeries.map(() => null);
         }
 
         // 이슈 marker plugin: 비중선 위에 빨간 점
@@ -1429,7 +1436,8 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: xLabels,
             datasets: [
               { label: '비중', data: weightSeries, borderColor: 'hsl(220, 75%, 67%)', backgroundColor: 'hsla(220, 75%, 67%, 0.15)', borderWidth: 1.25, pointRadius: 1, tension: 0.25, yAxisID: 'yW', fill: false },
-              { label: '수익률', data: retSeries, borderColor: 'hsl(95, 60%, 60%)', backgroundColor: 'hsla(95, 60%, 60%, 0.15)', borderWidth: 1, borderDash: [4, 3], pointRadius: 1, tension: 0, yAxisID: 'yR', fill: false }
+              { label: '수익률', data: retSeries, borderColor: 'hsl(95, 60%, 60%)', backgroundColor: 'hsla(95, 60%, 60%, 0.15)', borderWidth: 1, borderDash: [4, 3], pointRadius: 1, tension: 0, yAxisID: 'yR', fill: false },
+              { label: '수익금', data: profitSeries, borderColor: 'hsl(345, 75%, 60%)', backgroundColor: 'hsla(345, 75%, 60%, 0.10)', borderWidth: 1.25, pointRadius: 0, tension: 0.15, yAxisID: 'yP', fill: false }
             ]
           },
           plugins: [issueDots],
