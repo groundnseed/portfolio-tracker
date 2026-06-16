@@ -3,6 +3,10 @@ on:
   schedule:
     # 매일 23:00 UTC (08:00 KST) — KR/US 마감 후
     - cron: '0 23 * * *'
+  push:
+    paths:
+      - 'index.html'
+      - 'scripts/fetch_*.py'
   workflow_dispatch:
     inputs:
       start_date:
