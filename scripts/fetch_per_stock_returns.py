@@ -79,17 +79,32 @@ def main():
 
     # ticker별 일별 close fetch
     histories = {}  # name → [{date(YYYY-MM-DD), close}]
+    sr_updates = {}  # name → updated basis/current (for stockReturns 갱신)
     for s in sr:
         ticker = s.get('ticker', '')
         name = s['name']
         basis = s.get('basisPrice')
         ysym = ticker_map.get(ticker)
-        if not ysym or not basis:
-            print(f'  - skip {name} ({ticker})')
+        if not ysym:
+            print(f'  - skip {name} ({ticker}): no ticker map')
             continue
         try:
             closes = fetch_close_history(ysym, start, end)
             sorted_dates = sorted(closes.keys())
+            # basisPrice 없으면 첫 fetch close 를 basisPrice 로 자동 설정
+            if not basis:
+                if not sorted_dates:
+                    print(f'  - skip {name}: no data')
+                    continue
+                # 신규편입일 추정: 6/14 직전 close (있으면), 없으면 첫 close
+                target = '2026-06-12'
+                basis_date = sorted_dates[0]
+                for d in sorted_dates:
+                    if d <= target:
+                        basis_date = d
+                basis = closes[basis_date]
+                sr_updates[name] = {'basisPrice': round(basis, 2), 'currentPrice': round(closes[sorted_dates[-1]], 2)}
+                print(f'  ⚡ {name} basis 자동: {basis:.2f} ({basis_date})')
             histories[name] = [{'date': d, 'close': closes[d], 'r': round((closes[d] - basis) / basis * 100, 2)}
                                 for d in sorted_dates]
             print(f'  ✓ {name:20s} ({ysym:12s}) {len(histories[name])} 거래일')
@@ -111,6 +126,19 @@ def main():
 
     new_psh_js = '[\n' + ',\n'.join('      ' + json.dumps(x, ensure_ascii=False) for x in psh) + '\n    ]'
     html = html.replace(psh_m.group(0), 'const perStockHistory = ' + new_psh_js + ';', 1)
+
+    # stockReturns 자동 보정 (basisPrice/currentPrice None 인 종목)
+    if sr_updates:
+        for s in sr:
+            if s['name'] in sr_updates:
+                u = sr_updates[s['name']]
+                if not s.get('basisPrice'): s['basisPrice'] = u['basisPrice']
+                if not s.get('currentPrice'): s['currentPrice'] = u['currentPrice']
+                if s.get('basisPrice'):
+                    s['returnPct'] = round((s['currentPrice']-s['basisPrice'])/s['basisPrice']*100, 2)
+        new_sr_js = '[\n' + ',\n'.join('    ' + json.dumps(x, ensure_ascii=False) for x in sr) + '\n    ]'
+        html = html.replace(sr_m.group(0), 'const stockReturns = ' + new_sr_js + ';', 1)
+        print(f'✓ stockReturns 자동 보정: {list(sr_updates.keys())}')
 
     with open('index.html', 'w', encoding='utf-8') as f:
         f.write(html)
