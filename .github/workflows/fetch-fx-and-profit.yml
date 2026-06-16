@@ -2,10 +2,6 @@ name: fetch fx and compute profit
 on:
   schedule:
     - cron: '30 23 * * *'   # 매일 08:30 KST (KR/US 마감 후)
-  push:
-    paths:
-      - "scripts/fetch_fx_and_profit.py"
-      - ".github/workflows/fetch-fx-and-profit.yml"
   workflow_dispatch:
 
 permissions:
