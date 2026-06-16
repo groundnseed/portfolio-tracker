@@ -237,7 +237,9 @@ document.addEventListener('DOMContentLoaded', function() {
       { date:'5/31', kr:48.5, us:37.0, total:85.5 },
       { date:'6/2', kr:48.5, us:37.5, total:86.0 },
       { date:'6/4', kr:48.5, us:35.0, total:83.5 },
-      { date:'6/7', kr:36.0, us:21.5, total:57.5, callout:{ text:'6/7\n대대적축소', pinned: true } }
+      { date:'6/7', kr:36.0, us:21.5, total:57.5, callout:{ text:'6/7\n대대적축소', pinned: true },
+      { date:'6/14', kr:35.5, us:17.5, total:53.0 },
+      { date:'6/16', kr:43.5, us:32.0, total:75.5, callout:{ text:'6/16\n여름3 증액 75.5%', pinned: true } } }
     ];
 
     // ═══════════════════════════════════════════════════
@@ -1004,24 +1006,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // 🏷 종목별 현재 수익률 (막대 차트)
     // ═══════════════════════════════════════════════════
     const stockReturns = [
-    {"ticker": "KRX:069500", "name": "KODEX 200", "market": "kr", "pct": 8.0, "basisPrice": 93065.0, "currentPrice": 123850.0, "returnPct": 33.08},
+    {"ticker": "KRX:069500", "name": "KODEX 200", "market": "kr", "pct": 12.0, "basisPrice": 93065.0, "currentPrice": 123850.0, "returnPct": 33.08},
     {"ticker": "KRX:005380", "name": "현대차", "market": "kr", "pct": 5.5, "basisPrice": 540833.33, "currentPrice": 597000.0, "returnPct": 10.39},
     {"ticker": "KRX:009150", "name": "삼성전기", "market": "kr", "pct": 4.0, "basisPrice": 518233.33, "currentPrice": 1805000.0, "returnPct": 248.3},
-    {"ticker": "KRX:005930", "name": "삼성전자", "market": "kr", "pct": 4.0, "basisPrice": 203000.0, "currentPrice": 299000.0, "returnPct": 47.29},
+    {"ticker": "KRX:005930", "name": "삼성전자", "market": "kr", "pct": 6.0, "basisPrice": 203000.0, "currentPrice": 299000.0, "returnPct": 47.29},
     {"ticker": "KRX:000660", "name": "SK하이닉스", "market": "kr", "pct": 3.5, "basisPrice": 1053700.0, "currentPrice": 2101000.0, "returnPct": 99.39},
-    {"ticker": "KRX:105560", "name": "KB금융", "market": "kr", "pct": 3.0, "basisPrice": 158450.0, "currentPrice": 151500.0, "returnPct": -4.39},
+    {"ticker": "KRX:105560", "name": "KB금융", "market": "kr", "pct": 4.0, "basisPrice": 158450.0, "currentPrice": 151500.0, "returnPct": -4.39},
     {"ticker": "KRX:010120", "name": "LS ELECTRIC", "market": "kr", "pct": 2.0, "basisPrice": 186825.0, "currentPrice": 229500.0, "returnPct": 22.84},
     {"ticker": "KRX:010060", "name": "OCI홀딩스", "market": "kr", "pct": 2.0, "basisPrice": 208242.86, "currentPrice": 283500.0, "returnPct": 36.14},
     {"ticker": "KRX:006800", "name": "미래에셋증권", "market": "kr", "pct": 2.0, "basisPrice": 69704.17, "currentPrice": 51100.0, "returnPct": -26.69},
     {"ticker": "KRX:064400", "name": "LG CNS", "market": "kr", "pct": 2.0, "basisPrice": 92800.0, "currentPrice": 92900.0, "returnPct": 0.11},
-    {"ticker": "NASDAQ:LRCX", "name": "Lam Research", "market": "us", "pct": 4.0, "basisPrice": 236.25, "currentPrice": 362.52, "returnPct": 53.45},
+    {"ticker": "NASDAQ:LRCX", "name": "Lam Research", "market": "us", "pct": 6.0, "basisPrice": 236.25, "currentPrice": 362.52, "returnPct": 53.45},
     {"ticker": "NASDAQ:DDOG", "name": "Datadog", "market": "us", "pct": 3.0, "basisPrice": 229.9, "currentPrice": 231.64, "returnPct": 0.76},
-    {"ticker": "NYSEARCA:IWM", "name": "iShares Russell 2000", "market": "us", "pct": 2.5, "basisPrice": 268.58, "currentPrice": 290.41, "returnPct": 8.13},
-    {"ticker": "NASDAQ:INTC", "name": "Intel", "market": "us", "pct": 2.0, "basisPrice": 55.3, "currentPrice": 116.96, "returnPct": 111.5},
+    {"ticker": "NYSEARCA:IWM", "name": "iShares Russell 2000", "market": "us", "pct": 5.0, "basisPrice": 268.58, "currentPrice": 290.41, "returnPct": 8.13},
+    {"ticker": "NASDAQ:INTC", "name": "Intel", "market": "us", "pct": 4.0, "basisPrice": 55.3, "currentPrice": 116.96, "returnPct": 111.5},
     {"ticker": "NASDAQ:LITE", "name": "Lumentum", "market": "us", "pct": 2.0, "basisPrice": 770.97, "currentPrice": 889.59, "returnPct": 15.39},
     {"ticker": "NASDAQ:SNDK", "name": "SanDisk", "market": "us", "pct": 2.0, "basisPrice": 763.12, "currentPrice": 1881.51, "returnPct": 146.55},
-    {"ticker": "NASDAQ:ARM", "name": "ARM Holdings", "market": "us", "pct": 2.0, "basisPrice": 380.81, "currentPrice": 414.01, "returnPct": 8.72},
-    {"ticker": "NASDAQ:CSCO", "name": "Cisco", "market": "us", "pct": 2.0, "basisPrice": 121.1, "currentPrice": 120.23, "returnPct": -0.72}
+    {"ticker": "NASDAQ:ARM", "name": "ARM Holdings", "market": "us", "pct": 3.0, "basisPrice": 380.81, "currentPrice": 414.01, "returnPct": 8.72},
+    {"ticker": "NASDAQ:CSCO", "name": "Cisco", "market": "us", "pct": 2.0, "basisPrice": 121.1, "currentPrice": 120.23, "returnPct": -0.72},
+    {"ticker": "NASDAQ:AMAT", "name": "Applied Materials", "market": "us", "pct": 2.0, "basisPrice": null, "currentPrice": null, "returnPct": 0}
     ];
 
 
