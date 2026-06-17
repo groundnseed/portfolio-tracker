@@ -35,7 +35,7 @@
 <body>
 <div class="wrap">
   <h1>Jin's Portfolio</h1>
-  <div class="sub" id="subLine">2026 봄학기 · 3/10 ~ 4/27 · 33개 변동 · 확장포폴 제외</div>
+  <div class="sub" id="subLine">2026 봄학기 · 3/10 ~ 6/16 · 80+ 변동 · 확장포폴 제외</div>
 
   <div class="card today">
     <div class="card-title">📅 마지막 변동 · <span id="todayDate"></span></div>
@@ -122,25 +122,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // delta: +N 또는 -N (%p 변화량), today:true → 오늘 거래
     const holdings = [
       // 🇰🇷 KR
-      { name:'KODEX200', market:'kr', pct:8.0 },
-      { name:'현대차', market:'kr', pct:5.5 },
-      { name:'삼성전기', market:'kr', pct:4.0 },
-      { name:'삼성전자', market:'kr', pct:4.0 },
-      { name:'SK하이닉스', market:'kr', pct:3.5 },
-      { name:'KB금융', market:'kr', pct:3.0 },
+      { name:'KODEX200', market:'kr', pct:10.0 },
+      { name:'삼성전자', market:'kr', pct:6.0 },
+      { name:'삼성전기', market:'kr', pct:6.0 },
+      { name:'SK하이닉스', market:'kr', pct:5.5 },
+      { name:'KB금융', market:'kr', pct:4.0 },
+      { name:'현대차', market:'kr', pct:3.0 },
       { name:'LS Elec', market:'kr', pct:2.0 },
       { name:'OCI', market:'kr', pct:2.0 },
-      { name:'미래에셋', market:'kr', pct:2.0 },
-      { name:'LG씨엔에스', market:'kr', pct:2.0 },
-      // 🇺🇲 US (내림차순 정렬)
-      { name:'LRCX', market:'us', pct:4.0 },
+      { name:'삼성증권', market:'kr', pct:2.0 },
+      // 🇺🇲 US
+      { name:'LRCX', market:'us', pct:6.0 },
+      { name:'INTC', market:'us', pct:5.0 },
+      { name:'IWM', market:'us', pct:5.0 },
+      { name:'ARM', market:'us', pct:3.0 },
+      { name:'SNDK', market:'us', pct:3.0 },
       { name:'DDOG', market:'us', pct:3.0 },
-      { name:'IWM', market:'us', pct:2.5 },
-      { name:'INTC', market:'us', pct:2.0 },
-      { name:'LITE', market:'us', pct:2.0 },
-      { name:'SNDK', market:'us', pct:2.0 },
-      { name:'BE', market:'us', pct:2.0 },
-      { name:'ARM', market:'us', pct:2.0 },
+      { name:'MRVL', market:'us', pct:3.0 },
+      { name:'GS', market:'us', pct:3.0 },
+      { name:'AMAT', market:'us', pct:2.0 },
       { name:'CSCO', market:'us', pct:2.0 }
     ];
     const krTotal = holdings.filter(h => h.market==='kr').reduce((s,h)=>s+h.pct,0);
@@ -153,11 +153,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ─── 최근 변동 (매수/매도 둘 다 지원) ───
     const recentTrades = [
+      { date:'6/16', name:'KB금융', market:'kr', kind:'매수', delta:1, note:'3→4 (여름3)' },
+      { date:'6/16', name:'KODEX200', market:'kr', kind:'매수', delta:2, note:'8→10' },
+      { date:'6/16', name:'INTC', market:'us', kind:'매수', delta:1, note:'4→5' },
+      { date:'6/16', name:'ARM', market:'us', kind:'매수', delta:1, note:'2→3' },
+      { date:'6/16', name:'MRVL', market:'us', kind:'매수', delta:1, note:'2→3' },
+      { date:'6/16', name:'GS', market:'us', kind:'매수', delta:1, note:'2→3' },
+      { date:'6/16', name:'GOOG', market:'us', kind:'매도', delta:2, note:'2→0 · 편출' },
+      { date:'6/15', name:'삼성전자', market:'kr', kind:'매수', delta:2, note:'4→6 복원' },
+      { date:'6/15', name:'SK하이닉스', market:'kr', kind:'매수', delta:2, note:'3.5→5.5 복원' },
+      { date:'6/15', name:'삼성전기', market:'kr', kind:'매수', delta:2, note:'4→6 복원' },
+      { date:'6/15', name:'KB금융', market:'kr', kind:'매수', delta:1, note:'2→3' },
+      { date:'6/14', name:'삼성증권', market:'kr', kind:'매수', delta:2, note:'신규편입' },
+      { date:'6/14', name:'AMAT', market:'us', kind:'매수', delta:2, note:'신규편입' },
+      { date:'6/14', name:'GS', market:'us', kind:'매수', delta:2, note:'신규편입' },
+      { date:'6/14', name:'INTC', market:'us', kind:'매수', delta:1, note:'3→4' },
+      { date:'6/14', name:'IWM', market:'us', kind:'매수', delta:1, note:'4→5' },
+      { date:'6/12', name:'MRVL', market:'us', kind:'매수', delta:2, note:'신규편입' },
+      { date:'6/11', name:'BE', market:'us', kind:'매도', delta:2, note:'2→0 · 편출' },
       { date:'6/7', name:'KODEX200', market:'kr', kind:'매도', delta:4, note:'12→8' },
-      { date:'6/7', name:'삼성전기',  market:'kr', kind:'매도', delta:2, note:'6→4' },
-      { date:'6/7', name:'IWM',      market:'us', kind:'매도', delta:2.5, note:'5→2.5' },
-      { date:'6/7', name:'INTC',     market:'us', kind:'매도', delta:2, note:'4→2' },
-      { date:'6/7', name:'AVGO',     market:'us', kind:'매도', delta:2, note:'2→0 · 편출' }
+      { date:'6/7', name:'삼성전기', market:'kr', kind:'매도', delta:2, note:'6→4' },
+      { date:'6/7', name:'IWM', market:'us', kind:'매도', delta:2.5, note:'5→2.5' },
+      { date:'6/7', name:'INTC', market:'us', kind:'매도', delta:2, note:'4→2' },
+      { date:'6/7', name:'AVGO', market:'us', kind:'매도', delta:2, note:'2→0 · 편출' }
     ];
 
     // ─── 마지막 변동 카드 (recentTrades 가장 최근 날짜 기준) ───
