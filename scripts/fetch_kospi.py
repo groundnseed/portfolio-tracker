@@ -41,7 +41,10 @@ def main():
     if 'const kospiByDate =' in html:
         html = re.sub(r'const kospiByDate = \{[^}]*\};', f'const kospiByDate = {json.dumps(kospi_filled)};', html)
     else:
-        m = re.search(r'(const weightDates = \[.*?\];\s*\n)', html, re.DOTALL)
+        # NAV 다음 위치 (트렌드 차트 생성 전)에 삽입
+        m = re.search(r'(const NAV = \d+;\s*\n)', html)
+        if not m:
+            m = re.search(r'(const weightDates = \[.*?\];\s*\n)', html, re.DOTALL)
         html = html[:m.end()] + f'    const kospiByDate = {json.dumps(kospi_filled)};\n' + html[m.end():]
 
     with open('index.html', 'w', encoding='utf-8') as f:
