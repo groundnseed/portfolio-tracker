@@ -462,8 +462,7 @@ document.addEventListener('DOMContentLoaded', function() {
           ctx.strokeStyle = '#0b1424';
           ctx.stroke();
 
-          // pinned 는 아래쪽 박스로 따로 그리니까 라벨 생략
-          if (e.callout.pinned) { ctx.restore(); return; }
+          // pinned 콜아웃도 노란 점 위 라벨로 표시 (hover 시 자세한 박스)
 
           // 점 위에 이벤트 텍스트 (비중 선 위쪽)
           const lines = e.callout.text.split('\n');
@@ -485,7 +484,10 @@ document.addEventListener('DOMContentLoaded', function() {
           ctx.restore();
         });
 
-        // 2) pinned 콜아웃은 박스 + 화살표까지 항상 표시
+        // 2) pinned 콜아웃은 hover 시에만 박스+화살표 표시 (마우스 올렸을 때만)
+        const activeEls = (chart.tooltip && chart.tooltip.getActiveElements && chart.tooltip.getActiveElements()) || [];
+        const isHovering = activeEls.length > 0;
+        if (!isHovering) return;  // hover 안 했으면 pinned 박스 안 그림
         events.forEach((e, i) => {
           if (!e.callout || !e.callout.pinned) return;
           const co = e.callout;
