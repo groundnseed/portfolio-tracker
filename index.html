@@ -48,7 +48,7 @@
   </div>
 
   <div class="card">
-    <div class="card-title">Jin's Portfolio 비중 변화 (3/10 신학기 → 4/27)</div>
+    <div class="card-title">Jin's Portfolio 비중 변화 + KOSPI (3/10 ~ 6/16)</div>
     <div class="chart-box-trend"><canvas id="trendChart"></canvas></div>
   </div>
 
@@ -572,13 +572,16 @@ document.addEventListener('DOMContentLoaded', function() {
         datasets: [
           { label: '총 주식비중', data: events.map(e => e.total), borderColor: '#5ba3f5',
              backgroundColor: 'rgba(91,163,245,0.10)', borderWidth: 2.6, pointRadius: 3.5,
-             pointHoverRadius: 6, fill: true, tension: 0.25, order: 3 },
+             pointHoverRadius: 6, fill: true, tension: 0.25, order: 3, yAxisID: 'y' },
           { label: '🇰🇷 한국',  data: events.map(e => e.kr),    borderColor: '#e57373',
              backgroundColor: 'transparent', borderWidth: 2, pointRadius: 2.5,
-             pointHoverRadius: 5, tension: 0.25, order: 2 },
+             pointHoverRadius: 5, tension: 0.25, order: 2, yAxisID: 'y' },
           { label: '🇺🇲 미국',  data: events.map(e => e.us),    borderColor: '#7cc88a',
              backgroundColor: 'transparent', borderWidth: 2, pointRadius: 2.5,
-             pointHoverRadius: 5, tension: 0.25, order: 1 }
+             pointHoverRadius: 5, tension: 0.25, order: 1, yAxisID: 'y' },
+          { label: '📊 KOSPI', data: events.map(e => typeof kospiByDate !== 'undefined' ? kospiByDate[e.date] : null),
+             borderColor: '#fbbf24', backgroundColor: 'transparent', borderWidth: 1.8,
+             pointRadius: 0, pointHoverRadius: 4, borderDash: [4, 3], tension: 0.2, order: 0, yAxisID: 'yK' }
         ]
       },
       options: {
@@ -603,7 +606,7 @@ document.addEventListener('DOMContentLoaded', function() {
             footerFont: { size: 10, weight: '700' },
             callbacks: {
               title: (items) => items[0].label,  // 날짜
-              label: (c) => '  ' + c.dataset.label + ': ' + c.raw.toFixed(1) + '%',
+              label: (c) => '  ' + c.dataset.label + ': ' + (c.dataset.label.includes('KOSPI') ? Math.round(c.raw).toLocaleString() : c.raw.toFixed(1) + '%'),
               afterBody: (items) => {
                 const idx = items[0].dataIndex;
                 const ev = events[idx];
@@ -616,7 +619,8 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         scales: {
           x: { ticks: { color: '#6b7280', font: { size: 10 }, maxRotation: 45 }, grid: { color: '#1e2a44' } },
-          y: { ticks: { color: '#6b7280', callback: v => v + '%' }, grid: { color: '#1e2a44' }, beginAtZero: true }
+          y: { ticks: { color: '#6b7280', callback: v => v + '%' }, grid: { color: '#1e2a44' }, beginAtZero: true, position: 'left' },
+          yK: { ticks: { color: '#fbbf24', font: { size: 10 }, callback: v => v.toLocaleString() }, grid: { display: false }, position: 'right' }
         }
       },
       plugins: [trendMarkers]
