@@ -2,8 +2,6 @@ name: fetch kospi
 on:
   schedule:
     - cron: '40 23 * * *'
-  push:
-    paths: ['scripts/fetch_kospi.py', '.github/workflows/fetch-kospi.yml']
   workflow_dispatch:
 permissions:
   contents: write
