@@ -43,7 +43,14 @@
   </div>
 
   <div class="card">
-    <div class="card-title" id="holdingsTitle">Jin's Portfolio 종목별 비중 (4/27 기준, 총 94.5%)</div>
+    <div class="card-title" id="holdingsTitle">Jin's Portfolio 종목별 비중 (6/17 기준, 총 80.5%)</div>
+    <div style="font-size:11px; color:#94a3b8; margin:2px 0 10px; padding:6px 10px; background:rgba(148,163,184,0.05); border-radius:6px; line-height:1.6;">
+      <b style="color:#fbbf24;">📋 확장 포트폴리오 이력</b><br>
+      • <b>VRT</b> 5/29 이동 (MP→확장) &nbsp; • <b>CAT</b> 6/2 이동 → 6/17 MP 복귀<br>
+      • <b>두산에너빌리티</b> 6/2 이동 → 6/8 편출 &nbsp; • <b>한화에어로스페이스</b> 6/8 편출<br>
+      • <b>FSLR</b> 5/29 편입 → 6/7 편출 &nbsp; • <b>피에스케이</b> 6/14 신규편입 (보유 중)<br>
+      • <b>FDX</b> 6/2 편출 &nbsp; • <b>BE</b> 5/29 확장→MP 이동, 이후 6/11 편출
+    </div>
     <div class="chart-scroll"><div class="chart-box"><canvas id="holdingsChart"></canvas></div></div>
   </div>
 
@@ -61,7 +68,7 @@
   </div>
 
   <div class="card">
-    <div class="card-title" id="stockReturnTitle">종목별 현재 수익률 (4/27 기준)</div>
+    <div class="card-title" id="stockReturnTitle">종목별 현재 수익률 (6/17 기준)</div>
     <div class="chart-scroll"><div class="chart-box"><canvas id="stockReturnChart"></canvas></div></div>
   </div>
 
@@ -108,6 +115,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('[chart] DOMContentLoaded fired, Chart=', typeof Chart);
   try {
     if (typeof Chart === 'undefined') throw new Error('Chart.js failed to load');
     if (typeof ChartDataLabels !== 'undefined') Chart.register(ChartDataLabels);
