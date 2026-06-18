@@ -42,9 +42,8 @@
     <div id="todayList"></div>
   </div>
 
-  <div class="card">
-    <div class="card-title" id="holdingsTitle">Jin's Portfolio 종목별 비중 (4/27 기준, 총 94.5%)</div>
-    <div class="chart-scroll"><div class="chart-box"><canvas id="holdingsChart"></canvas></div></div>
+  <div class="card" id="holdingsCard">
+    <div id="holdingsInner"></div>
   </div>
 
   <div class="card">
@@ -249,172 +248,58 @@ document.addEventListener('DOMContentLoaded', function() {
     // ═══════════════════════════════════════════════════
     // 📊 종목별 바 차트 (좌: 🇰🇷 / 우: 🇺🇲 · 가운데 점선)
     // ═══════════════════════════════════════════════════
-    const lastKR = holdings.map(h=>h.market).lastIndexOf('kr');  // 분리선 왼쪽 인덱스
+    // ── 종목별 비중 수평 바 차트 (CSS/HTML) ──────────────────────────
+    function renderHoldingsCard() {
+      const kr = holdings.filter(h => h.market === 'kr').sort((a,b) => b.pct - a.pct);
+      const us = holdings.filter(h => h.market === 'us').sort((a,b) => b.pct - a.pct);
+      const krt = kr.reduce((s,h) => s+h.pct, 0);
+      const ust = us.reduce((s,h) => s+h.pct, 0);
+      const total = +(krt + ust).toFixed(1);
+      const maxPct = Math.max(...holdings.map(h => h.pct));
+      const changed = holdings.filter(h => h.today);
+      const latestDate = events.length ? events[events.length-1].date : '';
 
-    // 커스텀 플러그인: 가운데 점선, 국가 라벨, "▲+Xp" 콜아웃, "X/X 변경" 뱃지
-    const holdingsOverlay = {
-      id: 'holdingsOverlay',
-      afterDatasetsDraw(chart) {
-        const ctx = chart.ctx;
-        const meta = chart.getDatasetMeta(0);
-        const chartArea = chart.chartArea;
-        if (!meta || !meta.data.length) return;
+      const barRow = (h, color) => {
+        const w = (h.pct / maxPct * 100).toFixed(1);
+        const star = h.today ? ' ★' : '';
+        const deltaTag = h.today ? `<span style="font-size:10px;color:#fcd34d;margin-left:4px;">+${h.delta}%p</span>` : '';
+        return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <div style="width:84px;text-align:right;font-size:11.5px;color:${h.today?'#fcd34d':'#cbd5e1'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:${h.today?'700':'400'};">${h.name}${star}</div>
+          <div style="flex:1;display:flex;align-items:center;gap:5px;">
+            <div style="background:${color};height:20px;width:${w}%;border-radius:3px;min-width:4px;opacity:${h.today?1:0.82};"></div>
+            <span style="font-size:11px;font-weight:700;color:#e2e8f0;">${h.pct}%</span>${deltaTag}
+          </div>
+        </div>`;
+      };
 
-        // ── 1. 가운데 세로 점선 ──
-        const leftBar = meta.data[lastKR];
-        const rightBar = meta.data[lastKR + 1];
-        if (leftBar && rightBar) {
-          const dividerX = (leftBar.x + rightBar.x) / 2;
-          ctx.save();
-          ctx.strokeStyle = '#4b5563';
-          ctx.lineWidth = 1;
-          ctx.setLineDash([5, 5]);
-          ctx.beginPath();
-          ctx.moveTo(dividerX, chartArea.top);
-          ctx.lineTo(dividerX, chartArea.bottom);
-          ctx.stroke();
-          ctx.restore();
+      const changedSection = changed.length ? `
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid #1e2a44;">
+          <div style="font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:7px;">${latestDate} 변경 종목 매매근거</div>
+          ${changed.map(h => `<div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">
+            <span style="color:#fcd34d;font-weight:700;">${h.name}</span>
+            <span style="color:#60a5fa;margin-left:6px;">+${h.delta}%p</span>
+            ${h.note ? `<span style="color:#6b7280;margin-left:6px;">${h.note}</span>` : ''}
+          </div>`).join('')}
+        </div>` : '';
 
-          // ── 2. "한국 XX%" / "미국 XX%" 큰 중앙 라벨 ──
-          const krCenterX = (chartArea.left + dividerX) / 2;
-          const usCenterX = (dividerX + chartArea.right) / 2;
-          const labelY = chartArea.top + 26;
-          ctx.save();
-          ctx.font = 'bold 18px "Noto Sans KR", sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#e57373';
-          ctx.fillText(`한국 ${krTotal.toFixed(1)}%`, krCenterX, labelY);
-          ctx.fillStyle = '#7cc88a';
-          ctx.fillText(`미국 ${usTotal.toFixed(1)}%`, usCenterX, labelY);
-          ctx.restore();
-        }
-
-        // ── 3. 우상단 "X/X 변경" 뱃지 ──
-        ctx.save();
-        ctx.font = 'bold 12px "Noto Sans KR", sans-serif';
-        const badgeText = `${todayLabel} 변경`;
-        const bw = ctx.measureText(badgeText).width + 18;
-        const bh = 26;
-        const bx = chartArea.right - bw - 6;
-        const by = chartArea.top + 6;
-        ctx.fillStyle = 'rgba(251, 191, 36, 0.12)';
-        ctx.strokeStyle = '#fbbf24';
-        ctx.lineWidth = 1.3;
-        roundRect(ctx, bx, by, bw, bh, 5);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = '#fbbf24';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(badgeText, bx + bw/2, by + bh/2);
-        ctx.restore();
-
-        // ── 4. "▲+X%" 금색 테두리 · 금색 글씨 콜아웃 (오늘 거래 종목 위) ──
-        //    막대보다 살짝 작게 → 막대 위에 깔끔히 앉도록
-        holdings.forEach((h, i) => {
-          if (!h.today) return;
-          const bar = meta.data[i];
-          if (!bar) return;
-          ctx.save();
-          ctx.font = 'bold 9.5px "Noto Sans KR", sans-serif';
-          const text = `▲+${h.delta}%`;
-          const tw = ctx.measureText(text).width + 8;
-          const th = 17;
-          const tx = bar.x - tw/2;
-          // 숫자 라벨 위로 띄우기
-          const ty = bar.y - th - 22;
-          // 진한 바탕 + 금색 테두리 + 금색 글씨
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.96)';
-          ctx.strokeStyle = '#fbbf24';
-          ctx.lineWidth = 1.5;
-          roundRect(ctx, tx, ty, tw, th, 4);
-          ctx.fill();
-          ctx.stroke();
-          ctx.fillStyle = '#fcd34d';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(text, bar.x, ty + th/2);
-          ctx.restore();
-        });
-      }
-    };
-
-    function roundRect(ctx, x, y, w, h, r) {
-      ctx.beginPath();
-      ctx.moveTo(x+r, y);
-      ctx.lineTo(x+w-r, y);
-      ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-      ctx.lineTo(x+w, y+h-r);
-      ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-      ctx.lineTo(x+r, y+h);
-      ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-      ctx.lineTo(x, y+r);
-      ctx.quadraticCurveTo(x, y, x+r, y);
-      ctx.closePath();
+      document.getElementById('holdingsInner').innerHTML = `
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
+          <div style="font-size:15px;font-weight:700;color:#e2e8f0;">찐샘 포트폴리오 보유종목</div>
+          <div style="font-size:12px;color:#94a3b8;">${latestDate} 기준 · 총 ${total}%</div>
+        </div>
+        <div style="display:flex;gap:16px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:#f87171;margin-bottom:10px;">■ 한국 ${krt.toFixed(1)}%</div>
+            ${kr.map(h => barRow(h, '#e57373')).join('')}
+          </div>
+          <div style="width:1px;background:#1e2a44;flex-shrink:0;"></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:#60a5fa;margin-bottom:10px;">■ 미국 ${ust.toFixed(1)}%</div>
+            ${us.map(h => barRow(h, '#5b8dee')).join('')}
+          </div>
+        </div>${changedSection}`;
     }
-
-    const hCtx = document.getElementById('holdingsChart').getContext('2d');
-    new Chart(hCtx, {
-      type: 'bar',
-      data: {
-        labels: holdings.map(h => h.name),
-        datasets: [{
-          label: '비중',
-          data: holdings.map(h => h.pct),
-          backgroundColor: holdings.map(h => h.market === 'kr' ? '#e57373' : '#7cc88a'),
-          borderColor: holdings.map(h => h.today ? '#fbbf24' : 'transparent'),
-          borderWidth: holdings.map(h => h.today ? 2.5 : 0),
-          borderRadius: 3,
-          maxBarThickness: 45,
-          categoryPercentage: 0.80,
-          barPercentage: 1.0
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        layout: { padding: { top: 50, right: 10, left: 6 } },
-        plugins: {
-          legend: {
-            display: true, position: 'top', align: 'end',
-            labels: {
-              color: '#b8c5dc', font: { size: 11 }, boxWidth: 14, boxHeight: 10,
-              generateLabels: () => {
-                const krCount = holdings.filter(h => h.market === 'kr').length;
-                const usCount = holdings.filter(h => h.market === 'us').length;
-                return [
-                  { text: `한국 (${krCount}종목)`, fillStyle: '#e57373', strokeStyle: '#e57373', hidden: false, index: 0 },
-                  { text: `미국 (${usCount}종목)`, fillStyle: '#7cc88a', strokeStyle: '#7cc88a', hidden: false, index: 1 }
-                ];
-              }
-            },
-            onClick: () => {}
-          },
-          datalabels: {
-            color: '#e4e7ef',
-            anchor: 'end', align: 'top', offset: 2,
-            font: { size: 11, weight: '700' },
-            formatter: v => v + '%'
-          },
-          tooltip: {
-            backgroundColor: '#0b1424', titleColor: '#fbbf24', bodyColor: '#e4e7ef',
-            callbacks: {
-              label: ctx => {
-                const h = holdings[ctx.dataIndex];
-                let s = ctx.raw + '%';
-                if (h.today) s += '  🎯 +' + h.delta + '%p (' + h.note + ')';
-                return s;
-              }
-            }
-          }
-        },
-        scales: {
-          x: { ticks: { color: '#b8c5dc', font: { size: 11 }, maxRotation: 45, minRotation: 45, autoSkip: false }, grid: { display: false } },
-          y: { ticks: { color: '#6b7280', callback: v => v + '%' }, grid: { color: '#1e2a44' }, beginAtZero: true, suggestedMax: 12 }
-        }
-      },
-      plugins: [holdingsOverlay]
-    });
+    renderHoldingsCard();
 
     // ═══════════════════════════════════════════════════
     // 📈 비중 변화 추이 (누적선 · 총/🇰🇷/🇺🇲)
