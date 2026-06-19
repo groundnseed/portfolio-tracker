@@ -146,8 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const krTotal = holdings.filter(h => h.market==='kr').reduce((s,h)=>s+h.pct,0);
     const usTotal = holdings.filter(h => h.market==='us').reduce((s,h)=>s+h.pct,0);
     const grandTotal = krTotal + usTotal;
-    document.getElementById('holdingsTitle').textContent =
-      `Jin's Portfolio 종목별 비중 (${todayLabel} 기준, 총 ${grandTotal.toFixed(1)}%)`;
+    const _ht = document.getElementById('holdingsTitle'); if(_ht) _ht.textContent = `Jin's Portfolio 종목별 비중 (${todayLabel} 기준, 총 ${grandTotal.toFixed(1)})%`;
     document.getElementById('subLine').textContent =
       `2026 봄학기 · 3/10 ~ ${todayLabel} · 확장포폴 제외 · 총 ${grandTotal.toFixed(1)}% (🇰🇷 ${krTotal.toFixed(1)}% + 🇺🇲 ${usTotal.toFixed(1)}%)`;
 
