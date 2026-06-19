@@ -64,30 +64,30 @@
     <div class="chart-scroll"><div class="chart-box"><canvas id="stockReturnChart"></canvas></div></div>
   </div>
 
-  <div class="card" id="bubble-card-v3">
-    <!-- v3-bubble-marker -->
-    <div class="card-title">📊 비중 vs 수익률 (사분면)</div>
-    <div style="text-align:center; color:#94a3b8; font-size:12px; margin:0 0 12px;">위치 = 순위 · 버블 크기 = 비중(%) · 색 = 수익률 그라데이션</div>
-    <div style="display:flex;gap:16px;align-items:stretch;">
-      <div style="width:120px;flex-shrink:0;display:flex;flex-direction:column;padding-top:12px;">
-        <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:8px;">수익률 (색)</div>
-        <div style="display:flex;gap:10px;align-items:stretch;height:280px;">
-          <div style="width:16px;border-radius:8px;background:linear-gradient(to bottom,hsl(335,88%,50%),hsl(350,80%,58%),hsl(8,78%,62%),hsl(28,78%,62%),hsl(45,70%,65%),hsl(70,55%,62%),hsl(95,55%,60%),hsl(135,50%,70%),hsl(195,40%,80%),hsl(220,78%,68%),hsl(220,90%,42%));"></div>
-          <div style="display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:#cbd5e1;">
-            <span>+150%</span><span>+100%</span><span>+50%</span><span>0%</span><span>-25%</span>
-          </div>
-        </div>
-        <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(148,163,184,0.15);">
-          <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:8px;">비중 (크기)</div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:9px;height:9px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>3%</span></div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:17px;height:17px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>5%</span></div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:22px;height:22px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>6%</span></div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:33px;height:33px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>10%</span></div>
+<!-- v3-bubble-marker -->
+<section style="margin-top:32px;">
+  <h2 style="text-align:center;color:#e2e8f0;font-size:18px;font-weight:700;margin:0 0 4px;">📊 비중 vs 수익률 (사분면)</h2>
+  <p style="text-align:center;color:#94a3b8;font-size:12px;margin:0 0 12px;">위치 = 순위 · 버블 크기 = 비중(%) · 색 = 수익률 그라데이션</p>
+  <div style="display:flex;gap:16px;max-width:1100px;margin:0 auto;align-items:stretch;">
+    <div style="width:120px;flex-shrink:0;display:flex;flex-direction:column;padding-top:12px;">
+      <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:8px;">수익률 (색)</div>
+      <div style="display:flex;gap:10px;align-items:stretch;height:280px;">
+        <div style="width:16px;border-radius:8px;background:linear-gradient(to bottom,hsl(335,88%,50%),hsl(350,80%,58%),hsl(8,78%,62%),hsl(28,78%,62%),hsl(45,70%,65%),hsl(70,55%,62%),hsl(95,55%,60%),hsl(135,50%,70%),hsl(195,40%,80%),hsl(220,78%,68%),hsl(220,90%,42%));"></div>
+        <div style="display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:#cbd5e1;">
+          <span>+150%</span><span>+100%</span><span>+50%</span><span>0%</span><span>-25%</span>
         </div>
       </div>
-      <div class="chart-box-trend" style="flex:1;min-width:0;"><canvas id="bubbleChart"></canvas></div>
+      <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(148,163,184,0.15);">
+        <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:8px;">비중 (크기)</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:9px;height:9px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>3%</span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:17px;height:17px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>5%</span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:22px;height:22px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>6%</span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:33px;height:33px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>10%</span></div>
+      </div>
     </div>
+    <div style="position:relative;height:600px;flex:1;min-width:0;"><canvas id="bubbleChart"></canvas></div>
   </div>
+</section>
 
   <div class="card">
     <div class="card-title">📈 종목별 비중·수익률 추이 (mini-charts)</div>
@@ -976,14 +976,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // 🏷 종목별 현재 수익률 (막대 차트)
     // ═══════════════════════════════════════════════════
     const stockReturns = [
-    {"ticker": "KRX:069500", "name": "KODEX 200", "market": "kr", "pct": 12.0, "basisPrice": 93065.0, "currentPrice": 146910.0, "returnPct": 57.86},
-    {"ticker": "KRX:000660", "name": "SK하이닉스", "market": "kr", "pct": 6.5, "basisPrice": 1053700.0, "currentPrice": 2764000.0, "returnPct": 162.31},
-    {"ticker": "KRX:005930", "name": "삼성전자", "market": "kr", "pct": 6.0, "basisPrice": 203000.0, "currentPrice": 354000.0, "returnPct": 74.38},
-    {"ticker": "KRX:009150", "name": "삼성전기", "market": "kr", "pct": 6.0, "basisPrice": 518233.33, "currentPrice": 2270000.0, "returnPct": 338.03},
-    {"ticker": "KRX:105560", "name": "KB금융", "market": "kr", "pct": 4.0, "basisPrice": 158450.0, "currentPrice": 158300.0, "returnPct": -0.09},
-    {"ticker": "KRX:005380", "name": "현대차", "market": "kr", "pct": 3.0, "basisPrice": 540833.33, "currentPrice": 613000.0, "returnPct": 13.34},
-    {"ticker": "KRX:010120", "name": "LS ELECTRIC", "market": "kr", "pct": 2.0, "basisPrice": 186825.0, "currentPrice": 259000.0, "returnPct": 38.63},
-    {"ticker": "KRX:010060", "name": "OCI홀딩스", "market": "kr", "pct": 2.0, "basisPrice": 208242.86, "currentPrice": 256500.0, "returnPct": 23.17},
+    {"ticker": "KRX:069500", "name": "KODEX 200", "market": "kr", "pct": 12.0, "basisPrice": 93065.0, "currentPrice": 146945.0, "returnPct": 57.9},
+    {"ticker": "KRX:000660", "name": "SK하이닉스", "market": "kr", "pct": 6.5, "basisPrice": 1053700.0, "currentPrice": 2685000.0, "returnPct": 154.82},
+    {"ticker": "KRX:005930", "name": "삼성전자", "market": "kr", "pct": 6.0, "basisPrice": 203000.0, "currentPrice": 362500.0, "returnPct": 78.57},
+    {"ticker": "KRX:009150", "name": "삼성전기", "market": "kr", "pct": 6.0, "basisPrice": 518233.33, "currentPrice": 2200000.0, "returnPct": 324.52},
+    {"ticker": "KRX:105560", "name": "KB금융", "market": "kr", "pct": 4.0, "basisPrice": 158450.0, "currentPrice": 163100.0, "returnPct": 2.93},
+    {"ticker": "KRX:005380", "name": "현대차", "market": "kr", "pct": 3.0, "basisPrice": 540833.33, "currentPrice": 601000.0, "returnPct": 11.12},
+    {"ticker": "KRX:010120", "name": "LS ELECTRIC", "market": "kr", "pct": 2.0, "basisPrice": 186825.0, "currentPrice": 242000.0, "returnPct": 29.53},
+    {"ticker": "KRX:010060", "name": "OCI홀딩스", "market": "kr", "pct": 2.0, "basisPrice": 208242.86, "currentPrice": 271500.0, "returnPct": 30.38},
     {"ticker": "KRX:016360", "name": "삼성증권", "market": "kr", "pct": 2.0, "basisPrice": 118800.0, "currentPrice": 124600.0, "returnPct": 4.88},
     {"ticker": "NASDAQ:LRCX", "name": "Lam Research", "market": "us", "pct": 6.0, "basisPrice": 236.25, "currentPrice": 389.04, "returnPct": 64.67},
     {"ticker": "NASDAQ:INTC", "name": "Intel", "market": "us", "pct": 5.0, "basisPrice": 55.3, "currentPrice": 133.99, "returnPct": 142.3},
@@ -1151,34 +1151,41 @@ document.addEventListener('DOMContentLoaded', function() {
       `<span style="color:${returnColor};font-size:18px;font-weight:800;margin-left:8px;">` +
       `총 ${returnSign}${weightedReturn.toFixed(2)}%</span>`;
 
-    // ═══════════════════════════════════════════════════
-    // 📊 비중 vs 수익률 (v3 — 순위·그라데이션·라벨)
-    // ═══════════════════════════════════════════════════
-    (function renderBubbleV3(){
-      function dispName(s){ if(s.ticker && /^(NASDAQ|NYSE|AMEX|NMS):/i.test(s.ticker)){ const t=s.ticker.split(':')[1]; return t==='C'?'CITI':t; } return s.name||s.ticker||'?'; }
-      const _raw = stockReturns.filter(s=>s.pct>0 && s.basisPrice).map(s=>({name:dispName(s),w:s.pct,r:+(s.returnPct||0).toFixed(2)}));
-      if(!_raw.length) return;
-      const N = _raw.length;
-      function rankIdx(a,k){ const so=a.map((d,i)=>({d,i})).sort((x,y)=>x.d[k]-y.d[k]||x.i-y.i); const r=new Array(a.length); so.forEach((s,kk)=>{r[s.i]=kk}); return r; }
-      const xR=rankIdx(_raw,'w'), yR=rankIdx(_raw,'r');
-      function bsize(w){ return 6 + Math.max(0,w-2)*3.4; }
+    (function(){
+      const FIELD_NAME="name",FIELD_PCT="pct",FIELD_RETURN="returnPct";
+      function displayName(s){ if(s.ticker&&/^(NASDAQ|NYSE|AMEX|NMS):/i.test(s.ticker)){const t=s.ticker.split(":")[1]; return t==="C"?"CITI":t;} return s[FIELD_NAME]||s.label||s.ticker||"?"; }
+      function getRows(){ if(typeof stockReturns==="undefined"||!Array.isArray(stockReturns))return[]; return stockReturns.map(s=>({name:displayName(s),w:+s[FIELD_PCT]||0,r:+s[FIELD_RETURN]||0})).filter(d=>d.w>0); }
+      function bsize(w){return 6+Math.max(0,w-2)*3.4;}
       const stops=[{v:-25,h:220,s:90,l:42},{v:-2,h:220,s:78,l:68},{v:5,h:195,s:40,l:80},{v:25,h:135,s:50,l:70},{v:50,h:95,s:55,l:60},{v:65,h:70,s:55,l:62},{v:80,h:45,s:70,l:65},{v:95,h:28,s:78,l:62},{v:110,h:8,s:78,l:62},{v:140,h:350,s:80,l:58},{v:200,h:335,s:88,l:50}];
-      function interp(r){ if(r<=stops[0].v) return Object.assign({},stops[0]); if(r>=stops[stops.length-1].v) return Object.assign({},stops[stops.length-1]); let a=stops[0],b=stops[1]; for(let i=0;i<stops.length-1;i++){if(r>=stops[i].v&&r<=stops[i+1].v){a=stops[i];b=stops[i+1];break;}} const t=(r-a.v)/(b.v-a.v); let h0=a.h,h1=b.h; if(Math.abs(h1-h0)>180){ if(h1<h0)h1+=360; else h0+=360; } return {h:((h0+(h1-h0)*t)+360)%360, s:a.s+(b.s-a.s)*t, l:a.l+(b.l-a.l)*t}; }
-      function rcol(r){ const o=interp(r); return 'hsl('+o.h.toFixed(1)+','+o.s.toFixed(1)+'%,'+o.l.toFixed(1)+'%)'; }
-      function llabel(r){ const o=interp(r); return 'hsl('+o.h.toFixed(1)+','+Math.max(o.s-10,40).toFixed(1)+'%,'+Math.min(o.l+18,86).toFixed(1)+'%)'; }
-      const pts=_raw.map((d,i)=>{ const c=rcol(d.r); return {x:xR[i],y:yR[i],r:bsize(d.w),_name:d.name,_w:d.w,_r:d.r,_anchor:'top',backgroundColor:c,borderColor:c}; });
-      const xMid=(N-1)/2, yMid=(N-1)/2;
-      for(const p of pts){ const dx=p.x-xMid, dy=p.y-yMid; const rE=p.x>=N-1.5, lE=p.x<=0.5, tE=p.y>=N-1.5, bE=p.y<=0.5; if(rE&&!tE&&!bE) p._anchor='left'; else if(lE&&!tE&&!bE) p._anchor='right'; else if(tE) p._anchor='bottom'; else if(bE) p._anchor='top'; else if(Math.abs(dy)>=Math.abs(dx)) p._anchor=dy>=0?'top':'bottom'; else p._anchor=dx>=0?'right':'left'; }
-      for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){ const p=pts[i],q=pts[j]; if(Math.hypot(p.x-q.x,p.y-q.y)<2.5 && p._anchor===q._anchor){ const dx=q.x-p.x, dy=q.y-p.y; if(Math.abs(dy)>=Math.abs(dx)){ if(dy>=0){p._anchor='bottom';q._anchor='top';} else {p._anchor='top';q._anchor='bottom';} } else { if(dx>=0){p._anchor='left';q._anchor='right';} else {p._anchor='right';q._anchor='left';} } } }
-      const sW=_raw.slice().sort((a,b)=>a.w-b.w).map(d=>d.w);
-      const sR=_raw.slice().sort((a,b)=>a.r-b.r).map(d=>d.r);
-      function zeroRank(){ if(sR[0]>=0) return -0.5; if(sR[sR.length-1]<0) return sR.length-0.5; for(let i=0;i<sR.length;i++) if(sR[i]>=0) return i-0.5; return null; }
-      const qbg={id:'qbg',beforeDatasetsDraw(c){ const ctx=c.ctx,ca=c.chartArea,s=c.scales; if(!ca) return; const px=s.x.getPixelForValue(xMid), py=s.y.getPixelForValue(yMid); ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.10)'; ctx.lineWidth=1; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(px,ca.top); ctx.lineTo(px,ca.bottom); ctx.moveTo(ca.left,py); ctx.lineTo(ca.right,py); ctx.stroke(); ctx.restore(); ctx.save(); ctx.font='600 11px system-ui'; ctx.fillStyle='rgba(244,114,182,0.75)'; ctx.textAlign='right'; ctx.textBaseline='top'; ctx.fillText('⭐ 핵심 winner',ca.right-8,ca.top+8); ctx.fillStyle='rgba(190,242,100,0.75)'; ctx.textAlign='left'; ctx.fillText('🛒 추가매수 후보',ca.left+8,ca.top+8); ctx.fillStyle='rgba(248,113,113,0.85)'; ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText('⚠️ 위험',ca.right-8,ca.bottom-8); ctx.fillStyle='rgba(248,113,113,0.85)'; ctx.textAlign='left'; ctx.fillText('✂️ 컷 후보',ca.left+8,ca.bottom-8); ctx.restore(); }};
-      const zl={id:'zl',
-        beforeDatasetsDraw(c){ const ctx=c.ctx,ca=c.chartArea,s=c.scales; if(!ca) return; const zr=zeroRank(); if(zr==null) return; const zy=s.y.getPixelForValue(zr); if(zy>=ca.bottom) return; ctx.save(); const g=ctx.createLinearGradient(0,zy,0,ca.bottom); g.addColorStop(0,'rgba(220,38,38,0.04)'); g.addColorStop(0.5,'rgba(220,38,38,0.10)'); g.addColorStop(1,'rgba(220,38,38,0.18)'); ctx.fillStyle=g; ctx.fillRect(ca.left,zy,ca.right-ca.left,ca.bottom-zy); ctx.restore(); },
-        afterDatasetsDraw(c){ const ctx=c.ctx,ca=c.chartArea,s=c.scales; if(!ca) return; const zr=zeroRank(); if(zr==null) return; const zy=s.y.getPixelForValue(zr); ctx.save(); ctx.strokeStyle='rgba(148,163,184,0.35)'; ctx.lineWidth=1; ctx.setLineDash([5,4]); ctx.beginPath(); ctx.moveTo(ca.left,zy); ctx.lineTo(ca.right,zy); ctx.stroke(); ctx.setLineDash([]); ctx.font='700 11px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillStyle='rgba(203,213,225,0.9)'; ctx.fillText('0%',ca.left+6,zy); ctx.font='600 10px system-ui'; ctx.textBaseline='bottom'; ctx.fillStyle='hsl(95,55%,75%)'; ctx.fillText('▲ 수익',ca.left+6,zy-4); ctx.textBaseline='top'; ctx.fillStyle='hsl(0,75%,75%)'; ctx.fillText('▼ 손실 ⚠️',ca.left+6,zy+4); ctx.restore(); }};
-      const lbl={id:'lbl',afterDatasetsDraw(c){ const ctx=c.ctx,ps=c.getDatasetMeta(0).data; ctx.save(); for(let i=0;i<ps.length;i++){ const p=ps[i],d=pts[i],r=(p.options&&p.options.radius)||d.r; let lx=p.x,ly=p.y,al='center',bl='bottom'; const g=7; if(d._anchor==='top'){ ly=p.y-r-g; bl='bottom'; al='center'; } if(d._anchor==='bottom'){ ly=p.y+r+g; bl='top'; al='center'; } if(d._anchor==='right'){ lx=p.x+r+g; al='left'; bl='middle'; } if(d._anchor==='left'){ lx=p.x-r-g; al='right'; bl='middle'; } ctx.textAlign=al; ctx.textBaseline=bl; ctx.font='700 13px -apple-system,system-ui,sans-serif'; ctx.strokeStyle='rgba(15,23,42,0.92)'; ctx.lineWidth=4; ctx.strokeText(d._name,lx,ly); ctx.fillStyle='#f8fafc'; ctx.fillText(d._name,lx,ly); ctx.font='600 11px system-ui'; const ySub=d._anchor==='top'?ly-14:(d._anchor==='bottom'?ly+14:ly+13); const wStr=d._w+'%', sep=' / ', rStr=(d._r>=0?'+':'')+d._r+'%'; const rColor=llabel(d._r); const wW=ctx.measureText(wStr).width, sW2=ctx.measureText(sep).width, rW=ctx.measureText(rStr).width; const total=wW+sW2+rW; let sx; if(al==='center') sx=lx-total/2; else if(al==='left') sx=lx; else sx=lx-total; ctx.textAlign='left'; ctx.strokeStyle='rgba(15,23,42,0.92)'; ctx.lineWidth=3; ctx.strokeText(wStr,sx,ySub); ctx.strokeText(sep,sx+wW,ySub); ctx.strokeText(rStr,sx+wW+sW2,ySub); ctx.fillStyle='#ffffff'; ctx.fillText(wStr,sx,ySub); ctx.fillStyle='rgba(203,213,225,0.65)'; ctx.fillText(sep,sx+wW,ySub); ctx.fillStyle=rColor; ctx.fillText(rStr,sx+wW+sW2,ySub); } ctx.restore(); }};
-      new Chart(document.getElementById('bubbleChart').getContext('2d'),{type:'bubble',data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.y,r:p.r})),backgroundColor:pts.map(p=>p.backgroundColor),borderColor:pts.map(p=>p.borderColor),borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:36,right:50,bottom:12,left:12}},plugins:{legend:{display:false},datalabels:{display:false},tooltip:{callbacks:{label:c=>{const d=pts[c.dataIndex]; return d._name+': 비중 '+d._w+'%, 수익률 '+(d._r>=0?'+':'')+d._r+'%';}}}},scales:{x:{type:'linear',title:{display:true,text:'← 비중 적음   |   비중 많음 →',color:'#94a3b8',font:{size:12}},min:-0.7,max:N-0.3,ticks:{color:'#94a3b8',font:{size:10},stepSize:1,callback:v=>{const r=Math.round(v); if(r<0||r>=N) return ''; if(r%3!==0&&r!==N-1) return ''; return sW[r]!=null?sW[r]+'%':'';}},grid:{color:'rgba(148,163,184,0.06)',drawBorder:false}},y:{type:'linear',title:{display:false},min:-0.7,max:N-0.3,ticks:{color:'#94a3b8',font:{size:10},stepSize:1,callback:v=>{const r=Math.round(v); if(r<0||r>=N) return ''; if(r%3!==0&&r!==N-1) return ''; const x=sR[r]; return x!=null?(x>=0?'+':'')+x+'%':'';}},grid:{color:'rgba(148,163,184,0.06)',drawBorder:false}}}},plugins:[qbg,zl,lbl]});
+      function interp(r){ if(r<=stops[0].v)return{...stops[0]}; if(r>=stops[stops.length-1].v)return{...stops[stops.length-1]}; let a=stops[0],b=stops[1]; for(let i=0;i<stops.length-1;i++){if(r>=stops[i].v&&r<=stops[i+1].v){a=stops[i];b=stops[i+1];break;}} const t=(r-a.v)/(b.v-a.v); let h0=a.h,h1=b.h; if(Math.abs(h1-h0)>180){if(h1<h0)h1+=360;else h0+=360;} return{h:((h0+(h1-h0)*t)+360)%360,s:a.s+(b.s-a.s)*t,l:a.l+(b.l-a.l)*t}; }
+      function rcol(r){const{h,s,l}=interp(r);return `hsl(${h.toFixed(1)},${s.toFixed(1)}%,${l.toFixed(1)}%)`;}
+      function llabel(r){const{h,s,l}=interp(r);return `hsl(${h.toFixed(1)},${Math.max(s-10,40).toFixed(1)}%,${Math.min(l+18,86).toFixed(1)}%)`;}
+      function rankIdx(arr,key){const so=arr.map((d,i)=>({d,i})).sort((a,b)=>a.d[key]-b.d[key]||a.i-b.i); const r=new Array(arr.length); so.forEach((s,k)=>{r[s.i]=k}); return r;}
+      let inst=null;
+      function render(){
+        const cv=document.getElementById("bubbleChart"); if(!cv||typeof Chart==="undefined")return;
+        const raw=getRows(); if(!raw.length)return;
+        const N=raw.length, xR=rankIdx(raw,"w"), yR=rankIdx(raw,"r");
+        const pts=raw.map((d,i)=>{const c=rcol(d.r); return{x:xR[i],y:yR[i],r:bsize(d.w),_name:d.name,_w:d.w,_r:d.r,_anchor:"top",backgroundColor:c,borderColor:c};});
+        const xMid=(N-1)/2, yMid=(N-1)/2;
+        // edge-aware + 위치기반 anchor
+        for(const p of pts){const dx=p.x-xMid,dy=p.y-yMid; const rE=p.x>=N-1.5,lE=p.x<=0.5,tE=p.y>=N-1.5,bE=p.y<=0.5; if(rE&&!tE&&!bE)p._anchor="left"; else if(lE&&!tE&&!bE)p._anchor="right"; else if(tE)p._anchor="bottom"; else if(bE)p._anchor="top"; else if(Math.abs(dy)>=Math.abs(dx))p._anchor=dy>=0?"top":"bottom"; else p._anchor=dx>=0?"right":"left";}
+        // 충돌 분리
+        for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const p=pts[i],q=pts[j]; if(Math.hypot(p.x-q.x,p.y-q.y)<2.5&&p._anchor===q._anchor){const dx=q.x-p.x,dy=q.y-p.y; if(Math.abs(dy)>=Math.abs(dx)){if(dy>=0){p._anchor="bottom";q._anchor="top";}else{p._anchor="top";q._anchor="bottom";}}else{if(dx>=0){p._anchor="left";q._anchor="right";}else{p._anchor="right";q._anchor="left";}}}}
+        const sW=[...raw].sort((a,b)=>a.w-b.w).map(d=>d.w);
+        const sR=[...raw].sort((a,b)=>a.r-b.r).map(d=>d.r);
+        function zeroRank(){if(sR[0]>=0)return -0.5; if(sR[sR.length-1]<0)return sR.length-0.5; for(let i=0;i<sR.length;i++)if(sR[i]>=0)return i-0.5; return null;}
+        const qbg={id:"qbg",beforeDatasetsDraw(c){const{ctx,chartArea:ca,scales:s}=c; if(!ca)return; const px=s.x.getPixelForValue(xMid),py=s.y.getPixelForValue(yMid); ctx.save(); ctx.strokeStyle="rgba(255,255,255,0.10)";ctx.lineWidth=1;ctx.setLineDash([4,4]); ctx.beginPath();ctx.moveTo(px,ca.top);ctx.lineTo(px,ca.bottom);ctx.moveTo(ca.left,py);ctx.lineTo(ca.right,py);ctx.stroke(); ctx.restore(); ctx.save();ctx.font="600 11px system-ui"; ctx.fillStyle="rgba(244,114,182,0.75)";ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText("⭐ 핵심 winner",ca.right-8,ca.top+8); ctx.fillStyle="rgba(190,242,100,0.75)";ctx.textAlign="left";ctx.fillText("🛒 추가매수 후보",ca.left+8,ca.top+8); ctx.fillStyle="rgba(248,113,113,0.85)";ctx.textAlign="right";ctx.textBaseline="bottom";ctx.fillText("⚠️ 위험",ca.right-8,ca.bottom-8); ctx.fillStyle="rgba(248,113,113,0.85)";ctx.textAlign="left";ctx.fillText("✂️ 컷 후보",ca.left+8,ca.bottom-8); ctx.restore();}};
+        const zline={id:"zero",
+          beforeDatasetsDraw(c){const{ctx,chartArea:ca,scales:s}=c; if(!ca)return; const zr=zeroRank(); if(zr==null)return; const zy=s.y.getPixelForValue(zr); if(zy>=ca.bottom)return; ctx.save(); const g=ctx.createLinearGradient(0,zy,0,ca.bottom); g.addColorStop(0,"rgba(220,38,38,0.04)"); g.addColorStop(0.5,"rgba(220,38,38,0.10)"); g.addColorStop(1,"rgba(220,38,38,0.18)"); ctx.fillStyle=g; ctx.fillRect(ca.left,zy,ca.right-ca.left,ca.bottom-zy); ctx.restore();},
+          afterDatasetsDraw(c){const{ctx,chartArea:ca,scales:s}=c; if(!ca)return; const zr=zeroRank(); if(zr==null)return; const zy=s.y.getPixelForValue(zr); ctx.save(); ctx.strokeStyle="rgba(148,163,184,0.35)";ctx.lineWidth=1;ctx.setLineDash([5,4]); ctx.beginPath();ctx.moveTo(ca.left,zy);ctx.lineTo(ca.right,zy);ctx.stroke();ctx.setLineDash([]); ctx.font="700 11px system-ui";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillStyle="rgba(203,213,225,0.9)";ctx.fillText("0%",ca.left+6,zy); ctx.font="600 10px system-ui";ctx.textBaseline="bottom";ctx.fillStyle="hsl(95,55%,75%)";ctx.fillText("▲ 수익",ca.left+6,zy-4); ctx.textBaseline="top";ctx.fillStyle="hsl(0,75%,75%)";ctx.fillText("▼ 손실 ⚠️",ca.left+6,zy+4); ctx.restore();}};
+        const lbl={id:"lbl",afterDatasetsDraw(c){const{ctx}=c,ps=c.getDatasetMeta(0).data; ctx.save(); for(let i=0;i<ps.length;i++){const p=ps[i],d=pts[i],r=(p.options&&p.options.radius)||d.r; let lx=p.x,ly=p.y,al="center",bl="bottom";const g=7; if(d._anchor==="top"){ly=p.y-r-g;bl="bottom";al="center";} if(d._anchor==="bottom"){ly=p.y+r+g;bl="top";al="center";} if(d._anchor==="right"){lx=p.x+r+g;al="left";bl="middle";} if(d._anchor==="left"){lx=p.x-r-g;al="right";bl="middle";} ctx.textAlign=al;ctx.textBaseline=bl; ctx.font="700 13px -apple-system,system-ui,'Apple SD Gothic Neo',sans-serif"; ctx.strokeStyle="rgba(15,23,42,0.92)";ctx.lineWidth=4;ctx.strokeText(d._name,lx,ly); ctx.fillStyle="#f8fafc";ctx.fillText(d._name,lx,ly); ctx.font="600 11px system-ui"; const ySub=d._anchor==="top"?ly-14:(d._anchor==="bottom"?ly+14:ly+13); const wStr=`${d._w}%`,sep=" / ",rStr=`${d._r>=0?"+":""}${d._r}%`; const rColor=llabel(d._r); const wW=ctx.measureText(wStr).width,sW2=ctx.measureText(sep).width,rW=ctx.measureText(rStr).width; const total=wW+sW2+rW; let sx; if(al==="center")sx=lx-total/2; else if(al==="left")sx=lx; else sx=lx-total; ctx.textAlign="left"; ctx.strokeStyle="rgba(15,23,42,0.92)";ctx.lineWidth=3; ctx.strokeText(wStr,sx,ySub);ctx.strokeText(sep,sx+wW,ySub);ctx.strokeText(rStr,sx+wW+sW2,ySub); ctx.fillStyle="#ffffff";ctx.fillText(wStr,sx,ySub); ctx.fillStyle="rgba(203,213,225,0.65)";ctx.fillText(sep,sx+wW,ySub); ctx.fillStyle=rColor;ctx.fillText(rStr,sx+wW+sW2,ySub);} ctx.restore();}};
+        if(inst)inst.destroy();
+        inst=new Chart(cv.getContext("2d"),{type:"bubble",data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.y,r:p.r})),backgroundColor:pts.map(p=>p.backgroundColor),borderColor:pts.map(p=>p.borderColor),borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:36,right:50,bottom:12,left:12}},plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>{const d=pts[c.dataIndex];return `${d._name}: 비중 ${d._w}%, 수익률 ${d._r>=0?"+":""}${d._r}%`;}}}},scales:{x:{type:"linear",title:{display:true,text:"← 비중 적음   |   비중 많음 →",color:"#94a3b8",font:{size:12}},min:-0.7,max:N-0.3,ticks:{color:"#94a3b8",font:{size:10},stepSize:1,callback:(v)=>{const r=Math.round(v); if(r<0||r>=N)return""; if(r%3!==0&&r!==N-1)return""; return sW[r]!=null?sW[r]+"%":"";}},grid:{color:"rgba(148,163,184,0.06)",drawBorder:false}},y:{type:"linear",title:{display:false},min:-0.7,max:N-0.3,ticks:{color:"#94a3b8",font:{size:10},stepSize:1,callback:(v)=>{const r=Math.round(v); if(r<0||r>=N)return""; if(r%3!==0&&r!==N-1)return""; const x=sR[r]; return x!=null?(x>=0?"+":"")+x+"%":"";}},grid:{color:"rgba(148,163,184,0.06)",drawBorder:false}}}},plugins:[qbg,zline,lbl]});
+      }
+      if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render);
+      else render();
+      window.renderBubbleChart=render;
     })();
 
 
