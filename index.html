@@ -120,29 +120,30 @@ document.addEventListener('DOMContentLoaded', function() {
     // ─── 종목별 보유 (4/23 반영) · KR 먼저, US 뒤 ───
     // delta: +N 또는 -N (%p 변화량), today:true → 오늘 거래
     const holdings = [
-      // 🇰🇷 KR
+      // 🇰🇷 KR — 6/19 기준
+      { name:'삼성전기',  market:'kr', pct:12.0 },
       { name:'KODEX200', market:'kr', pct:12.0 },
-      { name:'SK하이닉스', market:'kr', pct:6.5 },
-      { name:'삼성전자', market:'kr', pct:6.0 },
-      { name:'삼성전기', market:'kr', pct:6.0 },
-      { name:'KB금융', market:'kr', pct:4.0 },
-      { name:'현대차', market:'kr', pct:3.0 },
+      { name:'SK하이닉스',market:'kr', pct:9.0 },
+      { name:'삼성전자',  market:'kr', pct:8.0 },
+      { name:'KB금융',   market:'kr', pct:4.0 },
+      { name:'현대차',   market:'kr', pct:3.0 },
+      { name:'OCI홀딩스',market:'kr', pct:2.0 },
       { name:'LS Elec', market:'kr', pct:2.0 },
-      { name:'OCI', market:'kr', pct:2.0 },
       { name:'삼성증권', market:'kr', pct:2.0 },
-      // 🇺🇲 US (내림차순 정렬)
+      // 🇺🇲 US — 6/19 기준
       { name:'LRCX', market:'us', pct:6.0 },
+      { name:'IWM',  market:'us', pct:6.0, today:true, delta:1, change:'5→6 증액',  sector:'러셀2000',     note:'추세 확인, 지수 비중 보강' },
       { name:'INTC', market:'us', pct:5.0 },
-      { name:'IWM', market:'us', pct:5.0 },
-      { name:'ARM', market:'us', pct:3.0 },
-      { name:'SNDK', market:'us', pct:3.0 },
+      { name:'ARM',  market:'us', pct:3.0 },
       { name:'MRVL', market:'us', pct:3.0 },
+      { name:'GS',   market:'us', pct:3.0 },
+      { name:'SNDK', market:'us', pct:3.0 },
       { name:'DDOG', market:'us', pct:3.0 },
-      { name:'GS', market:'us', pct:3.0 },
-      { name:'CSCO', market:'us', pct:2.0 },
-      { name:'AMAT', market:'us', pct:2.0 },
-      { name:'CAT', market:'us', pct:2.0 }
-    ];
+      { name:'CAT',  market:'us', pct:3.0, today:true, delta:1, change:'2→3 증액',  sector:'기계/AI인프라', note:'정통 AI 인프라 상승 확장 대응' },
+      { name:'AMAT', market:'us', pct:3.0, today:true, delta:1, change:'2→3 증액',  sector:'반도체장비',    note:'변동성 낮고 편입비중 낮아 우선 증액' },
+      { name:'BE',   market:'us', pct:2.0, today:true, delta:2, change:'0→2 재편입', sector:'연료전지',     note:'재랠리 전환, AI 인프라 확장' },
+      { name:'CSCO', market:'us', pct:2.0 }
+    ]
     const krTotal = holdings.filter(h => h.market==='kr').reduce((s,h)=>s+h.pct,0);
     const usTotal = holdings.filter(h => h.market==='us').reduce((s,h)=>s+h.pct,0);
     const grandTotal = krTotal + usTotal;
@@ -241,62 +242,113 @@ document.addEventListener('DOMContentLoaded', function() {
       { date:'6/14', kr:26.5, us:31.0, total:57.5 },
       { date:'6/15', kr:37.5, us:31.0, total:68.5 },
       { date:'6/16', kr:40.5, us:35.0, total:75.5, callout:{ text:'6/16\n여름3 75.5%' } },
-      { date:'6/17', kr:43.5, us:37.0, total:80.5, callout:{ text:'6/17\n슬림화+증액', pinned: true } }
+      { date:'6/17', kr:43.5, us:37.0, total:80.5 },
+      { date:'6/19', kr:54.0, us:42.0, total:96.0, callout:{ text:'6/19\n222화 96%', pinned: true } }
     ];
 
     // ═══════════════════════════════════════════════════
     // 📊 종목별 바 차트 (좌: 🇰🇷 / 우: 🇺🇲 · 가운데 점선)
     // ═══════════════════════════════════════════════════
-    // ── 종목별 비중 수평 바 차트 (CSS/HTML) ──────────────────────────
+    // ── 종목별 비중 카드 (2열 레이아웃: 바차트 | 변경종목 카드) ─────────────
+    const EXTENDED_PORT = ['피에스케이', '삼성중공업', 'GEV', 'VRT'];
+
     function renderHoldingsCard() {
       const kr = holdings.filter(h => h.market === 'kr').sort((a,b) => b.pct - a.pct);
       const us = holdings.filter(h => h.market === 'us').sort((a,b) => b.pct - a.pct);
-      const krt = kr.reduce((s,h) => s+h.pct, 0);
-      const ust = us.reduce((s,h) => s+h.pct, 0);
+      const krt = +(kr.reduce((s,h) => s+h.pct, 0)).toFixed(1);
+      const ust = +(us.reduce((s,h) => s+h.pct, 0)).toFixed(1);
       const total = +(krt + ust).toFixed(1);
+      const cash = +(100 - total).toFixed(1);
+      const changed = holdings.filter(h => h.today).sort((a,b) => (b.delta||0)-(a.delta||0));
       const maxPct = Math.max(...holdings.map(h => h.pct));
-      const changed = holdings.filter(h => h.today);
       const latestDate = events.length ? events[events.length-1].date : '';
+
+      // 오늘 changed delta 합계 (오늘 총 증가분)
+      const todayDelta = changed.reduce((s,h) => s + (h.delta||0), 0);
+      const changedMkt = changed.length ? (changed[0].market === 'kr' ? '한국' : '미국') : '';
 
       const barRow = (h, color) => {
         const w = (h.pct / maxPct * 100).toFixed(1);
-        const star = h.today ? ' ★' : '';
-        const deltaTag = h.today ? `<span style="font-size:10px;color:#fcd34d;margin-left:4px;">+${h.delta}%p</span>` : '';
-        return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-          <div style="width:84px;text-align:right;font-size:11.5px;color:${h.today?'#fcd34d':'#cbd5e1'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:${h.today?'700':'400'};">${h.name}${star}</div>
+        const starBadge = h.today ? '<span style="color:#fbbf24;margin-right:3px;">★</span>' : '';
+        const border = h.today ? `2px solid #fbbf24` : `2px solid transparent`;
+        return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
+          <div style="width:80px;text-align:right;font-size:11.5px;color:${h.today?'#fcd34d':'#cbd5e1'};
+            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+            font-weight:${h.today?'700':'400'};">${starBadge}${h.name}</div>
           <div style="flex:1;display:flex;align-items:center;gap:5px;">
-            <div style="background:${color};height:20px;width:${w}%;border-radius:3px;min-width:4px;opacity:${h.today?1:0.82};"></div>
-            <span style="font-size:11px;font-weight:700;color:#e2e8f0;">${h.pct}%</span>${deltaTag}
+            <div style="background:${color};height:20px;width:${w}%;border-radius:3px;
+              min-width:4px;border:${border};box-sizing:border-box;
+              opacity:${h.today?1:0.82};"></div>
+            <span style="font-size:11px;font-weight:700;color:#e2e8f0;min-width:28px;">${h.pct}%</span>
           </div>
         </div>`;
       };
 
-      const changedSection = changed.length ? `
-        <div style="margin-top:14px;padding-top:12px;border-top:1px solid #1e2a44;">
-          <div style="font-size:12px;font-weight:700;color:#fbbf24;margin-bottom:7px;">${latestDate} 변경 종목 매매근거</div>
-          ${changed.map(h => `<div style="font-size:11px;color:#94a3b8;margin-bottom:4px;">
-            <span style="color:#fcd34d;font-weight:700;">${h.name}</span>
-            <span style="color:#60a5fa;margin-left:6px;">+${h.delta}%p</span>
-            ${h.note ? `<span style="color:#6b7280;margin-left:6px;">${h.note}</span>` : ''}
-          </div>`).join('')}
-        </div>` : '';
+      const changeCard = (h) => `
+        <div style="border-left:3px solid #5b8dee;background:rgba(91,141,238,0.07);
+          border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;">
+            <span style="font-size:13px;font-weight:700;color:#e2e8f0;">
+              <span style="color:#fbbf24;">★</span> ${h.name}
+            </span>
+            <span style="font-size:12px;font-weight:700;color:#60a5fa;">${h.change}</span>
+          </div>
+          <div style="font-size:10.5px;color:#6b7280;margin-bottom:5px;">
+            미국 · ${h.sector||''} · ${latestDate}
+          </div>
+          <div style="font-size:11.5px;color:#94a3b8;">${h.note||''}</div>
+        </div>`;
 
       document.getElementById('holdingsInner').innerHTML = `
-        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
-          <div style="font-size:15px;font-weight:700;color:#e2e8f0;">찐샘 포트폴리오 보유종목</div>
-          <div style="font-size:12px;color:#94a3b8;">${latestDate} 기준 · 총 ${total}%</div>
-        </div>
-        <div style="display:flex;gap:16px;">
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;font-weight:700;color:#f87171;margin-bottom:10px;">■ 한국 ${krt.toFixed(1)}%</div>
-            ${kr.map(h => barRow(h, '#e57373')).join('')}
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px;">
+          <div style="font-size:15px;font-weight:700;color:#e2e8f0;">
+            찐샘 포트폴리오 보유종목
           </div>
-          <div style="width:1px;background:#1e2a44;flex-shrink:0;"></div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:13px;font-weight:700;color:#60a5fa;margin-bottom:10px;">■ 미국 ${ust.toFixed(1)}%</div>
+          <div style="font-size:11px;color:#94a3b8;">${latestDate} 반영</div>
+        </div>
+        <div style="font-size:11px;color:#6b7280;margin-bottom:16px;">
+          주식 ${total}% (한국 ${krt}% + 미국 ${ust}%) · 현금 ${cash > 0 ? cash : 0}%
+          ${todayDelta > 0 ? `<span style="color:#fbbf24;margin-left:8px;">| ${latestDate} +${todayDelta}.0%p (${changedMkt})</span>` : ''}
+        </div>
+
+        <div style="display:flex;gap:20px;align-items:flex-start;">
+          <!-- 왼쪽: KR + US 바차트 -->
+          <div style="flex:0 0 46%;min-width:0;">
+            <div style="font-size:12.5px;font-weight:700;color:#f87171;margin-bottom:9px;">
+              ■ 한국 ${krt}%
+            </div>
+            ${kr.map(h => barRow(h, '#e57373')).join('')}
+            <div style="height:14px;"></div>
+            <div style="font-size:12.5px;font-weight:700;color:#60a5fa;margin-bottom:9px;">
+              ■ 미국 ${ust}%
+            </div>
             ${us.map(h => barRow(h, '#5b8dee')).join('')}
           </div>
-        </div>${changedSection}`;
+
+          <!-- 오른쪽: 변경 종목 매매근거 -->
+          <div style="flex:1;min-width:0;">
+            ${changed.length ? `
+            <div style="font-size:12.5px;font-weight:700;color:#e2e8f0;margin-bottom:12px;">
+              ${latestDate} 변경 종목 매매근거
+              <span style="color:#6b7280;font-weight:400;font-size:11px;margin-left:4px;">
+                (${changedMkt})
+              </span>
+            </div>
+            ${changed.map(h => changeCard(h)).join('')}` : `
+            <div style="color:#4b5563;font-size:13px;padding-top:20px;">오늘 변경 종목 없음</div>`}
+          </div>
+        </div>
+
+        ${EXTENDED_PORT.length ? `
+        <div style="margin-top:14px;padding:10px 14px;border:1px solid #fbbf24;
+          border-radius:8px;display:inline-block;">
+          <span style="font-size:11.5px;color:#fbbf24;font-weight:600;">
+            확장포트 (비중 미관리):
+          </span>
+          <span style="font-size:11.5px;color:#94a3b8;margin-left:6px;">
+            ${EXTENDED_PORT.join(' · ')}
+          </span>
+        </div>` : ''}`;
     }
     renderHoldingsCard();
 
