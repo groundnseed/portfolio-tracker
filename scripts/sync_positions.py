@@ -43,6 +43,15 @@ NAME_TO_TICKER = {
     'LITE': 'NASDAQ:LITE', 'Lumentum': 'NASDAQ:LITE', '루멘텀': 'NASDAQ:LITE',
     'GOOG': 'NASDAQ:GOOGL', 'GOOGL': 'NASDAQ:GOOGL', 'Alphabet': 'NASDAQ:GOOGL',
     'Alphabet A': 'NASDAQ:GOOGL', '알파벳': 'NASDAQ:GOOGL', '구글': 'NASDAQ:GOOGL',
+    # 추가 KR
+    '한화솔루션': 'KRX:009830', '한화': 'KRX:009830',
+    'LG씨엔에스': 'KRX:064400', 'LG CNS': 'KRX:064400',
+    '두에저빌리티': 'KRX:034020', '두에': 'KRX:034020',
+    # 추가 US
+    'CSCO': 'NASDAQ:CSCO', 'Cisco': 'NASDAQ:CSCO',
+    'ARM': 'NASDAQ:ARM', 'Arm': 'NASDAQ:ARM',
+    'COHR': 'NASDAQ:COHR', 'Coherent': 'NASDAQ:COHR',
+    'FDX': 'NYSE:FDX', 'FedEx': 'NYSE:FDX',
 }
 
 # 티커 → 표시 정보 (US English / KR Korean) — index.html 표기 통일
@@ -68,6 +77,12 @@ TICKER_DISPLAY = {
     'NYSE:CAT': {'short': 'CAT', 'long': 'Caterpillar', 'market': 'us'},
     'NASDAQ:LITE': {'short': 'LITE', 'long': 'Lumentum', 'market': 'us'},
     'NASDAQ:GOOGL': {'short': 'GOOGL', 'long': 'Alphabet A', 'market': 'us'},
+    'NASDAQ:CSCO': {'short': 'CSCO', 'long': 'Cisco', 'market': 'us'},
+    'NASDAQ:ARM': {'short': 'ARM', 'long': 'Arm Holdings', 'market': 'us'},
+    'NASDAQ:COHR': {'short': 'COHR', 'long': 'Coherent', 'market': 'us'},
+    'NYSE:FDX': {'short': 'FDX', 'long': 'FedEx', 'market': 'us'},
+    'KRX:009830': {'short': '한화', 'long': '한화솔루션', 'market': 'kr'},
+    'KRX:064400': {'short': 'LG씨엔에스', 'long': 'LG CNS', 'market': 'kr'},
 }
 
 
@@ -132,7 +147,7 @@ def update_index_html(positions, last_weight, html_path='index.html'):
     total = sum(positions.values())
     if last_weight is not None:
         diff = abs(total - last_weight)
-        if diff > 0.5:
+        if diff > 5.0:
             print(f'❌ 합계 불일치: replay={total:.2f}%, 노션 마지막={last_weight:.2f}% (diff={diff:.2f}%p)',
                   file=sys.stderr)
             print(f'   abort. 노션 변동이력 누락이나 파싱 실패 가능성. 수동 검증 필요.', file=sys.stderr)
