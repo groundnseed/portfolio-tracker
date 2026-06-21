@@ -67,7 +67,7 @@
 <!-- v3-bubble-marker -->
 <section style="margin-top:32px;">
   <h2 style="text-align:center;color:#e2e8f0;font-size:18px;font-weight:700;margin:0 0 4px;">📊 비중 vs 수익률 (사분면)</h2>
-  <p style="text-align:center;color:#94a3b8;font-size:12px;margin:0 0 12px;">위치 = 순위 · 버블 크기 = 비중(%) · 색 = 수익률 그라데이션<br><span style="font-size:10px;color:#64748b;">빌드: 2026-06-20 22:22 KST</span></p>
+  <p style="text-align:center;color:#94a3b8;font-size:12px;margin:0 0 12px;">위치 = 순위 · 버블 크기 = 비중(%) · 색 = 수익률 그라데이션<br><span style="font-size:10px;color:#64748b;">빌드: 2026-06-21 03:40 KST</span></p>
   <div style="display:flex;gap:16px;max-width:1100px;margin:0 auto;align-items:stretch;">
     <div style="width:120px;flex-shrink:0;display:flex;flex-direction:column;padding-top:12px;">
       <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:8px;">수익률 (색)</div>
@@ -79,10 +79,10 @@
       </div>
       <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(148,163,184,0.15);">
         <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:8px;">비중 (크기)</div>
-        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:6px;height:6px;border-radius:50%;background:hsl(220,75%,67%);display:inline-block;"></span><span>2%</span></div>
-        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:12px;height:12px;border-radius:50%;background:hsl(220,75%,67%);display:inline-block;"></span><span>4%</span></div>
-        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:19px;height:19px;border-radius:50%;background:hsl(220,75%,67%);display:inline-block;"></span><span>6%</span></div>
-        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:26px;height:26px;border-radius:50%;background:hsl(220,75%,67%);display:inline-block;"></span><span>8%</span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:9px;height:9px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>3%</span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:17px;height:17px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>5%</span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:22px;height:22px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>6%</span></div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:#cbd5e1;padding:5px 0;"><span style="width:33px;height:33px;border-radius:50%;background:hsl(220,75%,67%);"></span><span>10%</span></div>
       </div>
     </div>
     <div style="position:relative;height:600px;flex:1;min-width:0;"><canvas id="bubbleChart"></canvas></div>
@@ -121,28 +121,24 @@ document.addEventListener('DOMContentLoaded', function() {
     // delta: +N 또는 -N (%p 변화량), today:true → 오늘 거래
     const holdings = [
       // 🇰🇷 KR
-      { name:'KODEX200', market:'kr', pct:8.0 },
+      { name:'KODEX200', market:'kr', pct:10.0 },
       { name:'삼성전자', market:'kr', pct:6.0 },
       { name:'삼성전기', market:'kr', pct:6.0 },
       { name:'SK하이닉스', market:'kr', pct:5.5 },
       { name:'KB금융', market:'kr', pct:4.0 },
-      { name:'현대차', market:'kr', pct:3.5 },
-      { name:'미래에셋', market:'kr', pct:3.0 },
+      { name:'현대차', market:'kr', pct:3.0 },
       { name:'OCI', market:'kr', pct:2.0 },
       { name:'LS Elec', market:'kr', pct:2.0 },
       { name:'현대건설', market:'kr', pct:2.0 },
-      { name:'LG씨엔에스', market:'kr', pct:2.0 },
       // 🇺🇲 US (내림차순 정렬)
-      { name:'LRCX', market:'us', pct:4.0 },
-      { name:'GOOGL', market:'us', pct:4.0 },
+      { name:'LRCX', market:'us', pct:6.0 },
+      { name:'INTC', market:'us', pct:5.0 },
+      { name:'IWM', market:'us', pct:5.0 },
       { name:'VRT', market:'us', pct:3.0 },
+      { name:'SNDK', market:'us', pct:3.0 },
       { name:'CITY', market:'us', pct:3.0 },
-      { name:'IWM', market:'us', pct:2.5 },
-      { name:'INTC', market:'us', pct:2.0 },
-      { name:'LITE', market:'us', pct:2.0 },
+      { name:'ARM', market:'us', pct:3.0 },
       { name:'COHR', market:'us', pct:2.0 },
-      { name:'SNDK', market:'us', pct:2.0 },
-      { name:'ARM', market:'us', pct:2.0 },
       { name:'CSCO', market:'us', pct:2.0 }
     ];
 
@@ -971,29 +967,169 @@ document.addEventListener('DOMContentLoaded', function() {
     // 🏷 종목별 현재 수익률 (막대 차트)
     // ═══════════════════════════════════════════════════
     const stockReturns = [
-    {"ticker": "KRX:069500", "name": "KODEX 200", "market": "kr", "pct": 8.0, "basisPrice": 93065.0, "currentPrice": 146910.0, "returnPct": 57.86},
-    {"ticker": "KRX:005930", "name": "삼성전자", "market": "kr", "pct": 6.0, "basisPrice": 203000.0, "currentPrice": 354000.0, "returnPct": 74.38},
-    {"ticker": "KRX:009150", "name": "삼성전기", "market": "kr", "pct": 6.0, "basisPrice": 518233.33, "currentPrice": 2270000.0, "returnPct": 338.03},
-    {"ticker": "KRX:000660", "name": "SK하이닉스", "market": "kr", "pct": 5.5, "basisPrice": 1053700.0, "currentPrice": 2764000.0, "returnPct": 162.31},
-    {"ticker": "KRX:105560", "name": "KB금융", "market": "kr", "pct": 4.0, "basisPrice": 158450.0, "currentPrice": 158300.0, "returnPct": -0.09},
-    {"ticker": "KRX:005380", "name": "현대차", "market": "kr", "pct": 3.5, "basisPrice": 540833.33, "currentPrice": 613000.0, "returnPct": 13.34},
-    {"ticker": "KRX:006800", "name": "미래에셋증권", "market": "kr", "pct": 3.0, "basisPrice": 52300.0, "currentPrice": 48750.0, "returnPct": -6.79},
-    {"ticker": "KRX:010060", "name": "OCI홀딩스", "market": "kr", "pct": 2.0, "basisPrice": 208242.86, "currentPrice": 256500.0, "returnPct": 23.17},
-    {"ticker": "KRX:010120", "name": "LS ELECTRIC", "market": "kr", "pct": 2.0, "basisPrice": 186825.0, "currentPrice": 259000.0, "returnPct": 38.63},
-    {"ticker": "KRX:000720", "name": "현대건설", "market": "kr", "pct": 2.0, "basisPrice": 157500.0, "currentPrice": 128600.0, "returnPct": -18.35},
-    {"ticker": "KRX:064400", "name": "LG CNS", "market": "kr", "pct": 2.0, "basisPrice": 92800.0, "currentPrice": 85800.0, "returnPct": -7.54},
-    {"ticker": "NASDAQ:LRCX", "name": "Lam Research", "market": "us", "pct": 4.0, "basisPrice": 236.25, "currentPrice": 389.04, "returnPct": 64.67},
-    {"ticker": "NASDAQ:GOOGL", "name": "Alphabet A", "market": "us", "pct": 4.0, "basisPrice": 359.68, "currentPrice": 368.03, "returnPct": 2.32},
-    {"ticker": "NYSE:VRT", "name": "Vertiv", "market": "us", "pct": 3.0, "basisPrice": 302.87, "currentPrice": 333.05, "returnPct": 9.96},
-    {"ticker": "NYSE:C", "name": "Citigroup", "market": "us", "pct": 3.0, "basisPrice": 139.83, "currentPrice": 143.06, "returnPct": 2.31},
-    {"ticker": "NYSEARCA:IWM", "name": "iShares Russell 2000", "market": "us", "pct": 2.5, "basisPrice": 268.58, "currentPrice": 295.59, "returnPct": 10.06},
-    {"ticker": "NASDAQ:INTC", "name": "Intel", "market": "us", "pct": 2.0, "basisPrice": 55.3, "currentPrice": 133.99, "returnPct": 142.3},
-    {"ticker": "NASDAQ:LITE", "name": "Lumentum", "market": "us", "pct": 2.0, "basisPrice": 921.56, "currentPrice": 850.0, "returnPct": -7.77},
-    {"ticker": "NASDAQ:COHR", "name": "Coherent", "market": "us", "pct": 2.0, "basisPrice": null, "currentPrice": null, "returnPct": 0},
-    {"ticker": "NASDAQ:SNDK", "name": "SanDisk", "market": "us", "pct": 2.0, "basisPrice": 763.12, "currentPrice": 2184.75, "returnPct": 186.29},
-    {"ticker": "NASDAQ:ARM", "name": "Arm Holdings", "market": "us", "pct": 2.0, "basisPrice": 380.81, "currentPrice": 414.01, "returnPct": 8.72},
-    {"ticker": "NASDAQ:CSCO", "name": "Cisco", "market": "us", "pct": 2.0, "basisPrice": 121.1, "currentPrice": 120.23, "returnPct": -0.72}
-    ];
+    {
+        "ticker": "KRX:069500",
+        "name": "KODEX 200",
+        "market": "kr",
+        "pct": 10.0,
+        "basisPrice": 93065.0,
+        "currentPrice": 146910.0,
+        "returnPct": 57.86
+    },
+    {
+        "ticker": "KRX:005930",
+        "name": "삼성전자",
+        "market": "kr",
+        "pct": 6.0,
+        "basisPrice": 203000.0,
+        "currentPrice": 354000.0,
+        "returnPct": 74.38
+    },
+    {
+        "ticker": "KRX:009150",
+        "name": "삼성전기",
+        "market": "kr",
+        "pct": 6.0,
+        "basisPrice": 518233.33,
+        "currentPrice": 2270000.0,
+        "returnPct": 338.03
+    },
+    {
+        "ticker": "KRX:000660",
+        "name": "SK하이닉스",
+        "market": "kr",
+        "pct": 5.5,
+        "basisPrice": 1053700.0,
+        "currentPrice": 2764000.0,
+        "returnPct": 162.31
+    },
+    {
+        "ticker": "KRX:105560",
+        "name": "KB금융",
+        "market": "kr",
+        "pct": 4.0,
+        "basisPrice": 158450.0,
+        "currentPrice": 158300.0,
+        "returnPct": -0.09
+    },
+    {
+        "ticker": "KRX:005380",
+        "name": "현대차",
+        "market": "kr",
+        "pct": 3.0,
+        "basisPrice": 540833.33,
+        "currentPrice": 613000.0,
+        "returnPct": 13.34
+    },
+    {
+        "ticker": "KRX:010060",
+        "name": "OCI홀딩스",
+        "market": "kr",
+        "pct": 2.0,
+        "basisPrice": 208242.86,
+        "currentPrice": 256500.0,
+        "returnPct": 23.17
+    },
+    {
+        "ticker": "KRX:010120",
+        "name": "LS ELECTRIC",
+        "market": "kr",
+        "pct": 2.0,
+        "basisPrice": 186825.0,
+        "currentPrice": 259000.0,
+        "returnPct": 38.63
+    },
+    {
+        "ticker": "KRX:000720",
+        "name": "현대건설",
+        "market": "kr",
+        "pct": 2.0,
+        "basisPrice": 157500.0,
+        "currentPrice": 128600.0,
+        "returnPct": -18.35
+    },
+    {
+        "ticker": "NASDAQ:LRCX",
+        "name": "Lam Research",
+        "market": "us",
+        "pct": 6.0,
+        "basisPrice": 236.25,
+        "currentPrice": 389.04,
+        "returnPct": 64.67
+    },
+    {
+        "ticker": "NASDAQ:INTC",
+        "name": "Intel",
+        "market": "us",
+        "pct": 5.0,
+        "basisPrice": 55.3,
+        "currentPrice": 133.99,
+        "returnPct": 142.3
+    },
+    {
+        "ticker": "NYSEARCA:IWM",
+        "name": "iShares Russell 2000",
+        "market": "us",
+        "pct": 5.0,
+        "basisPrice": 268.58,
+        "currentPrice": 295.59,
+        "returnPct": 10.06
+    },
+    {
+        "ticker": "NYSE:VRT",
+        "name": "Vertiv",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 302.87,
+        "currentPrice": 333.05,
+        "returnPct": 9.96
+    },
+    {
+        "ticker": "NASDAQ:SNDK",
+        "name": "SanDisk",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 763.12,
+        "currentPrice": 2184.75,
+        "returnPct": 186.29
+    },
+    {
+        "ticker": "NYSE:C",
+        "name": "Citigroup",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 139.83,
+        "currentPrice": 143.06,
+        "returnPct": 2.31
+    },
+    {
+        "ticker": "NASDAQ:ARM",
+        "name": "Arm Holdings",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 380.81,
+        "currentPrice": 414.01,
+        "returnPct": 8.72
+    },
+    {
+        "ticker": "NASDAQ:COHR",
+        "name": "Coherent",
+        "market": "us",
+        "pct": 2.0,
+        "basisPrice": null,
+        "currentPrice": null,
+        "returnPct": 0
+    },
+    {
+        "ticker": "NASDAQ:CSCO",
+        "name": "Cisco",
+        "market": "us",
+        "pct": 2.0,
+        "basisPrice": 121.1,
+        "currentPrice": 120.23,
+        "returnPct": -0.72
+    }
+];
 
 
     const weightDates = ["3/10", "3/17", "3/27", "4/7", "4/8", "4/9", "4/10", "4/14", "4/15", "4/21", "4/22", "4/24", "4/26", "4/27", "4/28", "4/29", "4/30", "5/4", "5/5", "5/6", "5/7", "5/8", "5/10", "5/12", "5/13", "5/15", "5/17", "5/19", "5/20", "5/21", "5/22", "5/24", "5/26", "5/27", "5/28", "5/29", "5/31", "6/1", "6/2", "6/3", "6/4", "6/7", "6/8", "6/10", "6/11", "6/12", "6/14", "6/15", "6/16"];
