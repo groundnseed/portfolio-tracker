@@ -52,6 +52,12 @@ NAME_TO_TICKER = {
     'ARM': 'NASDAQ:ARM', 'Arm': 'NASDAQ:ARM',
     'COHR': 'NASDAQ:COHR', 'Coherent': 'NASDAQ:COHR',
     'FDX': 'NYSE:FDX', 'FedEx': 'NYSE:FDX',
+    'MRVL': 'NASDAQ:MRVL', 'Marvell': 'NASDAQ:MRVL', '마벨': 'NASDAQ:MRVL',
+    'GS': 'NYSE:GS', 'Goldman Sachs': 'NYSE:GS', '골드만': 'NYSE:GS',
+    'DDOG': 'NASDAQ:DDOG', 'Datadog': 'NASDAQ:DDOG', '데이터독': 'NASDAQ:DDOG',
+    'AMAT': 'NASDAQ:AMAT', 'Applied Materials': 'NASDAQ:AMAT', '어플라이드': 'NASDAQ:AMAT',
+    'BE': 'NYSE:BE', 'Bloom Energy': 'NYSE:BE', '블룸': 'NYSE:BE',
+    '삼성증권': 'KRX:016360',
 }
 
 # 티커 → 표시 정보 (US English / KR Korean) — index.html 표기 통일
@@ -83,6 +89,12 @@ TICKER_DISPLAY = {
     'NYSE:FDX': {'short': 'FDX', 'long': 'FedEx', 'market': 'us'},
     'KRX:009830': {'short': '한화', 'long': '한화솔루션', 'market': 'kr'},
     'KRX:064400': {'short': 'LG씨엔에스', 'long': 'LG CNS', 'market': 'kr'},
+    'KRX:016360': {'short': '삼성증권', 'long': '삼성증권', 'market': 'kr'},
+    'NASDAQ:MRVL': {'short': 'MRVL', 'long': 'Marvell Technology', 'market': 'us'},
+    'NYSE:GS': {'short': 'GS', 'long': 'Goldman Sachs', 'market': 'us'},
+    'NASDAQ:DDOG': {'short': 'DDOG', 'long': 'Datadog', 'market': 'us'},
+    'NASDAQ:AMAT': {'short': 'AMAT', 'long': 'Applied Materials', 'market': 'us'},
+    'NYSE:BE': {'short': 'BE', 'long': 'Bloom Energy', 'market': 'us'},
 }
 
 
