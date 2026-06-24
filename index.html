@@ -67,7 +67,7 @@
 <!-- v3-bubble-marker -->
 <section style="margin-top:32px;">
   <h2 style="text-align:center;color:#e2e8f0;font-size:18px;font-weight:700;margin:0 0 4px;">📊 비중 vs 수익률 (사분면)</h2>
-  <p style="text-align:center;color:#94a3b8;font-size:12px;margin:0 0 12px;">위치 = 순위 · 버블 크기 = 비중(%) · 색 = 수익률 그라데이션<br><span style="font-size:10px;color:#64748b;">빌드: 2026-06-21 03:40 KST</span></p>
+  <p style="text-align:center;color:#94a3b8;font-size:12px;margin:0 0 12px;">위치 = 순위 · 버블 크기 = 비중(%) · 색 = 수익률 그라데이션</p>
   <div style="display:flex;gap:16px;max-width:1100px;margin:0 auto;align-items:stretch;">
     <div style="width:120px;flex-shrink:0;display:flex;flex-direction:column;padding-top:12px;">
       <div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:8px;">수익률 (색)</div>
@@ -88,6 +88,44 @@
     <div style="position:relative;height:600px;flex:1;min-width:0;"><canvas id="bubbleChart"></canvas></div>
   </div>
 </section>
+
+<script>
+(function(){
+  const FIELD_NAME="name",FIELD_PCT="pct",FIELD_RETURN="returnPct";
+  function displayName(s){ if(s.ticker&&/^(NASDAQ|NYSE|AMEX|NMS):/i.test(s.ticker)){const t=s.ticker.split(":")[1]; return t==="C"?"CITI":t;} return s[FIELD_NAME]||s.label||s.ticker||"?"; }
+  function getRows(){ if(typeof stockReturns==="undefined"||!Array.isArray(stockReturns))return[]; return stockReturns.map(s=>({name:displayName(s),w:+s[FIELD_PCT]||0,r:+s[FIELD_RETURN]||0})).filter(d=>d.w>0); }
+  function bsize(w){return 6+Math.max(0,w-2)*3.4;}
+  const stops=[{v:-25,h:220,s:90,l:42},{v:-2,h:220,s:78,l:68},{v:5,h:195,s:40,l:80},{v:25,h:135,s:50,l:70},{v:50,h:95,s:55,l:60},{v:65,h:70,s:55,l:62},{v:80,h:45,s:70,l:65},{v:95,h:28,s:78,l:62},{v:110,h:8,s:78,l:62},{v:140,h:350,s:80,l:58},{v:200,h:335,s:88,l:50}];
+  function interp(r){ if(r<=stops[0].v)return{...stops[0]}; if(r>=stops[stops.length-1].v)return{...stops[stops.length-1]}; let a=stops[0],b=stops[1]; for(let i=0;i<stops.length-1;i++){if(r>=stops[i].v&&r<=stops[i+1].v){a=stops[i];b=stops[i+1];break;}} const t=(r-a.v)/(b.v-a.v); let h0=a.h,h1=b.h; if(Math.abs(h1-h0)>180){if(h1<h0)h1+=360;else h0+=360;} return{h:((h0+(h1-h0)*t)+360)%360,s:a.s+(b.s-a.s)*t,l:a.l+(b.l-a.l)*t}; }
+  function rcol(r){const{h,s,l}=interp(r);return `hsl(${h.toFixed(1)},${s.toFixed(1)}%,${l.toFixed(1)}%)`;}
+  function llabel(r){const{h,s,l}=interp(r);return `hsl(${h.toFixed(1)},${Math.max(s-10,40).toFixed(1)}%,${Math.min(l+18,86).toFixed(1)}%)`;}
+  function rankIdx(arr,key){const so=arr.map((d,i)=>({d,i})).sort((a,b)=>a.d[key]-b.d[key]||a.i-b.i); const r=new Array(arr.length); so.forEach((s,k)=>{r[s.i]=k}); return r;}
+  let inst=null;
+  function render(){
+    const cv=document.getElementById("bubbleChart"); if(!cv||typeof Chart==="undefined")return;
+    const raw=getRows(); if(!raw.length)return;
+    const N=raw.length, xR=rankIdx(raw,"w"), yR=rankIdx(raw,"r");
+    const pts=raw.map((d,i)=>{const c=rcol(d.r); return{x:xR[i],y:yR[i],r:bsize(d.w),_name:d.name,_w:d.w,_r:d.r,_anchor:"top",backgroundColor:c,borderColor:c};});
+    const xMid=(N-1)/2, yMid=(N-1)/2;
+    for(const p of pts){const dx=p.x-xMid,dy=p.y-yMid; const rE=p.x>=N-1.5,lE=p.x<=0.5,tE=p.y>=N-1.5,bE=p.y<=0.5; if(rE&&!tE&&!bE)p._anchor="left"; else if(lE&&!tE&&!bE)p._anchor="right"; else if(tE)p._anchor="bottom"; else if(bE)p._anchor="top"; else if(Math.abs(dy)>=Math.abs(dx))p._anchor=dy>=0?"top":"bottom"; else p._anchor=dx>=0?"right":"left";}
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const p=pts[i],q=pts[j]; if(Math.hypot(p.x-q.x,p.y-q.y)<2.5&&p._anchor===q._anchor){const dx=q.x-p.x,dy=q.y-p.y; if(Math.abs(dy)>=Math.abs(dx)){if(dy>=0){p._anchor="bottom";q._anchor="top";}else{p._anchor="top";q._anchor="bottom";}}else{if(dx>=0){p._anchor="left";q._anchor="right";}else{p._anchor="right";q._anchor="left";}}}}
+    const sW=[...raw].sort((a,b)=>a.w-b.w).map(d=>d.w);
+    const sR=[...raw].sort((a,b)=>a.r-b.r).map(d=>d.r);
+    function zeroRank(){if(sR[0]>=0)return -0.5; if(sR[sR.length-1]<0)return sR.length-0.5; for(let i=0;i<sR.length;i++)if(sR[i]>=0)return i-0.5; return null;}
+    const qbg={id:"qbg",beforeDatasetsDraw(c){const{ctx,chartArea:ca,scales:s}=c; if(!ca)return; const px=s.x.getPixelForValue(xMid),py=s.y.getPixelForValue(yMid); ctx.save(); ctx.strokeStyle="rgba(255,255,255,0.10)";ctx.lineWidth=1;ctx.setLineDash([4,4]); ctx.beginPath();ctx.moveTo(px,ca.top);ctx.lineTo(px,ca.bottom);ctx.moveTo(ca.left,py);ctx.lineTo(ca.right,py);ctx.stroke(); ctx.restore(); ctx.save();ctx.font="600 11px system-ui"; ctx.fillStyle="rgba(244,114,182,0.75)";ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText("⭐ 핵심 winner",ca.right-8,ca.top+8); ctx.fillStyle="rgba(190,242,100,0.75)";ctx.textAlign="left";ctx.fillText("🛒 추가매수 후보",ca.left+8,ca.top+8); ctx.fillStyle="rgba(248,113,113,0.85)";ctx.textAlign="right";ctx.textBaseline="bottom";ctx.fillText("⚠️ 위험",ca.right-8,ca.bottom-8); ctx.fillStyle="rgba(248,113,113,0.85)";ctx.textAlign="left";ctx.fillText("✂️ 컷 후보",ca.left+8,ca.bottom-8); ctx.restore();}};
+    const zline={id:"zero",
+      beforeDatasetsDraw(c){const{ctx,chartArea:ca,scales:s}=c; if(!ca)return; const zr=zeroRank(); if(zr==null)return; const zy=s.y.getPixelForValue(zr); if(zy>=ca.bottom)return; ctx.save(); const g=ctx.createLinearGradient(0,zy,0,ca.bottom); g.addColorStop(0,"rgba(220,38,38,0.04)"); g.addColorStop(0.5,"rgba(220,38,38,0.10)"); g.addColorStop(1,"rgba(220,38,38,0.18)"); ctx.fillStyle=g; ctx.fillRect(ca.left,zy,ca.right-ca.left,ca.bottom-zy); ctx.restore();},
+      afterDatasetsDraw(c){const{ctx,chartArea:ca,scales:s}=c; if(!ca)return; const zr=zeroRank(); if(zr==null)return; const zy=s.y.getPixelForValue(zr); ctx.save(); ctx.strokeStyle="rgba(148,163,184,0.35)";ctx.lineWidth=1;ctx.setLineDash([5,4]); ctx.beginPath();ctx.moveTo(ca.left,zy);ctx.lineTo(ca.right,zy);ctx.stroke();ctx.setLineDash([]); ctx.font="700 11px system-ui";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillStyle="rgba(203,213,225,0.9)";ctx.fillText("0%",ca.left+6,zy); ctx.font="600 10px system-ui";ctx.textBaseline="bottom";ctx.fillStyle="hsl(95,55%,75%)";ctx.fillText("▲ 수익",ca.left+6,zy-4); ctx.textBaseline="top";ctx.fillStyle="hsl(0,75%,75%)";ctx.fillText("▼ 손실 ⚠️",ca.left+6,zy+4); ctx.restore();}};
+    const lbl={id:"lbl",afterDatasetsDraw(c){const{ctx}=c,ps=c.getDatasetMeta(0).data; ctx.save(); for(let i=0;i<ps.length;i++){const p=ps[i],d=pts[i],r=(p.options&&p.options.radius)||d.r; let lx=p.x,ly=p.y,al="center",bl="bottom";const g=7; if(d._anchor==="top"){ly=p.y-r-g;bl="bottom";al="center";} if(d._anchor==="bottom"){ly=p.y+r+g;bl="top";al="center";} if(d._anchor==="right"){lx=p.x+r+g;al="left";bl="middle";} if(d._anchor==="left"){lx=p.x-r-g;al="right";bl="middle";} ctx.textAlign=al;ctx.textBaseline=bl; ctx.font="700 13px -apple-system,system-ui,'Apple SD Gothic Neo',sans-serif"; ctx.strokeStyle="rgba(15,23,42,0.92)";ctx.lineWidth=4;ctx.strokeText(d._name,lx,ly); ctx.fillStyle="#f8fafc";ctx.fillText(d._name,lx,ly); ctx.font="600 11px system-ui"; const ySub=d._anchor==="top"?ly-14:(d._anchor==="bottom"?ly+14:ly+13); const wStr=`${d._w}%`,sep=" / ",rStr=`${d._r>=0?"+":""}${d._r}%`; const rColor=llabel(d._r); const wW=ctx.measureText(wStr).width,sW2=ctx.measureText(sep).width,rW=ctx.measureText(rStr).width; const total=wW+sW2+rW; let sx; if(al==="center")sx=lx-total/2; else if(al==="left")sx=lx; else sx=lx-total; ctx.textAlign="left"; ctx.strokeStyle="rgba(15,23,42,0.92)";ctx.lineWidth=3; ctx.strokeText(wStr,sx,ySub);ctx.strokeText(sep,sx+wW,ySub);ctx.strokeText(rStr,sx+wW+sW2,ySub); ctx.fillStyle="#ffffff";ctx.fillText(wStr,sx,ySub); ctx.fillStyle="rgba(203,213,225,0.65)";ctx.fillText(sep,sx+wW,ySub); ctx.fillStyle=rColor;ctx.fillText(rStr,sx+wW+sW2,ySub);} ctx.restore();}};
+    if(inst)inst.destroy();
+    inst=new Chart(cv.getContext("2d"),{type:"bubble",data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.y,r:p.r})),backgroundColor:pts.map(p=>p.backgroundColor),borderColor:pts.map(p=>p.borderColor),borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:36,right:50,bottom:12,left:12}},plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>{const d=pts[c.dataIndex];return `${d._name}: 비중 ${d._w}%, 수익률 ${d._r>=0?"+":""}${d._r}%`;}}}},scales:{x:{type:"linear",title:{display:true,text:"← 비중 적음   |   비중 많음 →",color:"#94a3b8",font:{size:12}},min:-0.7,max:N-0.3,ticks:{color:"#94a3b8",font:{size:10},stepSize:1,callback:(v)=>{const r=Math.round(v); if(r<0||r>=N)return""; if(r%3!==0&&r!==N-1)return""; return sW[r]!=null?sW[r]+"%":"";}},grid:{color:"rgba(148,163,184,0.06)",drawBorder:false}},y:{type:"linear",title:{display:false},min:-0.7,max:N-0.3,ticks:{color:"#94a3b8",font:{size:10},stepSize:1,callback:(v)=>{const r=Math.round(v); if(r<0||r>=N)return""; if(r%3!==0&&r!==N-1)return""; const x=sR[r]; return x!=null?(x>=0?"+":"")+x+"%":"";}},grid:{color:"rgba(148,163,184,0.06)",drawBorder:false}}}},plugins:[qbg,zline,lbl]});
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render);
+  else render();
+  window.renderBubbleChart=render;
+})();
+</script>
+
 
   <div class="card">
     <div class="card-title">📈 종목별 비중·수익률 추이 (mini-charts)</div>
@@ -982,28 +1020,196 @@ document.addEventListener('DOMContentLoaded', function() {
     // 🏷 종목별 현재 수익률 (막대 차트)
     // ═══════════════════════════════════════════════════
     const stockReturns = [
-    {"ticker": "KRX:009150", "name": "삼성전기", "market": "kr", "pct": 12.0, "basisPrice": 518233.33, "currentPrice": 1990000.0, "returnPct": 284.0},
-    {"ticker": "KRX:069500", "name": "KODEX 200", "market": "kr", "pct": 12.0, "basisPrice": 93065.0, "currentPrice": 132820.0, "returnPct": 42.72},
-    {"ticker": "KRX:000660", "name": "SK하이닉스", "market": "kr", "pct": 9.0, "basisPrice": 1053700.0, "currentPrice": 2555000.0, "returnPct": 142.48},
-    {"ticker": "KRX:005930", "name": "삼성전자", "market": "kr", "pct": 8.0, "basisPrice": 203000.0, "currentPrice": 310000.0, "returnPct": 52.71},
-    {"ticker": "KRX:105560", "name": "KB금융", "market": "kr", "pct": 4.0, "basisPrice": 158450.0, "currentPrice": 153700.0, "returnPct": -3.0},
-    {"ticker": "KRX:005380", "name": "현대차", "market": "kr", "pct": 3.0, "basisPrice": 540833.33, "currentPrice": 511000.0, "returnPct": -5.52},
-    {"ticker": "KRX:010060", "name": "OCI홀딩스", "market": "kr", "pct": 2.0, "basisPrice": 208242.86, "currentPrice": 216000.0, "returnPct": 3.73},
-    {"ticker": "KRX:010120", "name": "LS ELECTRIC", "market": "kr", "pct": 2.0, "basisPrice": 186825.0, "currentPrice": 232500.0, "returnPct": 24.45},
-    {"ticker": "KRX:016360", "name": "삼성증권", "market": "kr", "pct": 2.0, "basisPrice": 118800.0, "currentPrice": 114000.0, "returnPct": -4.04},
-    {"ticker": "NASDAQ:LRCX", "name": "Lam Research", "market": "us", "pct": 6.0, "basisPrice": 236.25, "currentPrice": 371.33, "returnPct": 57.18},
-    {"ticker": "NYSEARCA:IWM", "name": "iShares Russell 2000", "market": "us", "pct": 6.0, "basisPrice": 268.58, "currentPrice": 295.32, "returnPct": 9.96},
-    {"ticker": "NASDAQ:INTC", "name": "Intel", "market": "us", "pct": 5.0, "basisPrice": 55.3, "currentPrice": 132.28, "returnPct": 139.2},
-    {"ticker": "NASDAQ:ARM", "name": "Arm Holdings", "market": "us", "pct": 3.0, "basisPrice": 380.81, "currentPrice": 414.01, "returnPct": 8.72},
-    {"ticker": "NASDAQ:MRVL", "name": "Marvell Technology", "market": "us", "pct": 3.0, "basisPrice": 279.7, "currentPrice": 307.86, "returnPct": 10.07},
-    {"ticker": "NYSE:GS", "name": "Goldman Sachs", "market": "us", "pct": 3.0, "basisPrice": 1062.75, "currentPrice": 1106.37, "returnPct": 4.1},
-    {"ticker": "NASDAQ:SNDK", "name": "SanDisk", "market": "us", "pct": 3.0, "basisPrice": 763.12, "currentPrice": 1963.6, "returnPct": 157.31},
-    {"ticker": "NASDAQ:DDOG", "name": "Datadog", "market": "us", "pct": 3.0, "basisPrice": 229.9, "currentPrice": 221.37, "returnPct": -3.71},
-    {"ticker": "NYSE:CAT", "name": "Caterpillar", "market": "us", "pct": 3.0, "basisPrice": 910.57, "currentPrice": 984.24, "returnPct": 8.09},
-    {"ticker": "NASDAQ:AMAT", "name": "Applied Materials", "market": "us", "pct": 3.0, "basisPrice": null, "currentPrice": null, "returnPct": 0},
-    {"ticker": "NYSE:BE", "name": "Bloom Energy", "market": "us", "pct": 2.0, "basisPrice": 260.22, "currentPrice": 345.85, "returnPct": 32.91},
-    {"ticker": "NASDAQ:CSCO", "name": "Cisco", "market": "us", "pct": 2.0, "basisPrice": 121.1, "currentPrice": 120.23, "returnPct": -0.72}
-    ];
+    {
+        "ticker": "KRX:009150",
+        "name": "삼성전기",
+        "market": "kr",
+        "pct": 12.0,
+        "basisPrice": 518233.33,
+        "currentPrice": 1990000.0,
+        "returnPct": 284.0
+    },
+    {
+        "ticker": "KRX:069500",
+        "name": "KODEX 200",
+        "market": "kr",
+        "pct": 12.0,
+        "basisPrice": 93065.0,
+        "currentPrice": 132820.0,
+        "returnPct": 42.72
+    },
+    {
+        "ticker": "KRX:000660",
+        "name": "SK하이닉스",
+        "market": "kr",
+        "pct": 9.0,
+        "basisPrice": 1053700.0,
+        "currentPrice": 2555000.0,
+        "returnPct": 142.48
+    },
+    {
+        "ticker": "KRX:005930",
+        "name": "삼성전자",
+        "market": "kr",
+        "pct": 8.0,
+        "basisPrice": 203000.0,
+        "currentPrice": 310000.0,
+        "returnPct": 52.71
+    },
+    {
+        "ticker": "KRX:105560",
+        "name": "KB금융",
+        "market": "kr",
+        "pct": 4.0,
+        "basisPrice": 158450.0,
+        "currentPrice": 153700.0,
+        "returnPct": -3.0
+    },
+    {
+        "ticker": "KRX:005380",
+        "name": "현대차",
+        "market": "kr",
+        "pct": 3.0,
+        "basisPrice": 540833.33,
+        "currentPrice": 511000.0,
+        "returnPct": -5.52
+    },
+    {
+        "ticker": "KRX:010060",
+        "name": "OCI홀딩스",
+        "market": "kr",
+        "pct": 2.0,
+        "basisPrice": 208242.86,
+        "currentPrice": 216000.0,
+        "returnPct": 3.73
+    },
+    {
+        "ticker": "KRX:010120",
+        "name": "LS ELECTRIC",
+        "market": "kr",
+        "pct": 2.0,
+        "basisPrice": 186825.0,
+        "currentPrice": 232500.0,
+        "returnPct": 24.45
+    },
+    {
+        "ticker": "KRX:016360",
+        "name": "삼성증권",
+        "market": "kr",
+        "pct": 2.0,
+        "basisPrice": 118800.0,
+        "currentPrice": 114000.0,
+        "returnPct": -4.04
+    },
+    {
+        "ticker": "NASDAQ:LRCX",
+        "name": "Lam Research",
+        "market": "us",
+        "pct": 6.0,
+        "basisPrice": 236.25,
+        "currentPrice": 371.33,
+        "returnPct": 57.18
+    },
+    {
+        "ticker": "NYSEARCA:IWM",
+        "name": "iShares Russell 2000",
+        "market": "us",
+        "pct": 6.0,
+        "basisPrice": 268.58,
+        "currentPrice": 295.32,
+        "returnPct": 9.96
+    },
+    {
+        "ticker": "NASDAQ:INTC",
+        "name": "Intel",
+        "market": "us",
+        "pct": 5.0,
+        "basisPrice": 55.3,
+        "currentPrice": 132.28,
+        "returnPct": 139.2
+    },
+    {
+        "ticker": "NASDAQ:ARM",
+        "name": "Arm Holdings",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 380.81,
+        "currentPrice": 414.01,
+        "returnPct": 8.72
+    },
+    {
+        "ticker": "NASDAQ:MRVL",
+        "name": "Marvell Technology",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 279.7,
+        "currentPrice": 307.86,
+        "returnPct": 10.07
+    },
+    {
+        "ticker": "NYSE:GS",
+        "name": "Goldman Sachs",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 1062.75,
+        "currentPrice": 1106.37,
+        "returnPct": 4.1
+    },
+    {
+        "ticker": "NASDAQ:SNDK",
+        "name": "SanDisk",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 763.12,
+        "currentPrice": 1963.6,
+        "returnPct": 157.31
+    },
+    {
+        "ticker": "NASDAQ:DDOG",
+        "name": "Datadog",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 229.9,
+        "currentPrice": 221.37,
+        "returnPct": -3.71
+    },
+    {
+        "ticker": "NYSE:CAT",
+        "name": "Caterpillar",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 910.57,
+        "currentPrice": 984.24,
+        "returnPct": 8.09
+    },
+    {
+        "ticker": "NASDAQ:AMAT",
+        "name": "Applied Materials",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": null,
+        "currentPrice": null,
+        "returnPct": 0
+    },
+    {
+        "ticker": "NYSE:BE",
+        "name": "Bloom Energy",
+        "market": "us",
+        "pct": 2.0,
+        "basisPrice": 260.22,
+        "currentPrice": 345.85,
+        "returnPct": 32.91
+    },
+    {
+        "ticker": "NASDAQ:CSCO",
+        "name": "Cisco",
+        "market": "us",
+        "pct": 2.0,
+        "basisPrice": 121.1,
+        "currentPrice": 120.23,
+        "returnPct": -0.72
+    }
+];
 
 
     const weightDates = ["3/10", "3/17", "3/27", "4/7", "4/8", "4/9", "4/10", "4/14", "4/15", "4/21", "4/22", "4/24", "4/26", "4/27", "4/28", "4/29", "4/30", "5/4", "5/5", "5/6", "5/7", "5/8", "5/10", "5/12", "5/13", "5/15", "5/17", "5/19", "5/20", "5/21", "5/22", "5/24", "5/26", "5/27", "5/28", "5/29", "5/31", "6/1", "6/2", "6/3", "6/4", "6/7", "6/8", "6/10", "6/11", "6/12", "6/14", "6/15", "6/16"];
@@ -1158,42 +1364,9 @@ document.addEventListener('DOMContentLoaded', function() {
       `<span style="color:${returnColor};font-size:18px;font-weight:800;margin-left:8px;">` +
       `총 ${returnSign}${weightedReturn.toFixed(2)}%</span>`;
 
-    (function(){
-      const FIELD_NAME="name",FIELD_PCT="pct",FIELD_RETURN="returnPct";
-      function displayName(s){ if(s.ticker&&/^(NASDAQ|NYSE|AMEX|NMS):/i.test(s.ticker)){const t=s.ticker.split(":")[1]; return t==="C"?"CITI":t;} return s[FIELD_NAME]||s.label||s.ticker||"?"; }
-      function getRows(){ if(typeof stockReturns==="undefined"||!Array.isArray(stockReturns))return[]; return stockReturns.map(s=>({name:displayName(s),w:+s[FIELD_PCT]||0,r:+s[FIELD_RETURN]||0})).filter(d=>d.w>0); }
-      function bsize(w){return 6+Math.max(0,w-2)*3.4;}
-      const stops=[{v:-25,h:220,s:90,l:42},{v:-2,h:220,s:78,l:68},{v:5,h:195,s:40,l:80},{v:25,h:135,s:50,l:70},{v:50,h:95,s:55,l:60},{v:65,h:70,s:55,l:62},{v:80,h:45,s:70,l:65},{v:95,h:28,s:78,l:62},{v:110,h:8,s:78,l:62},{v:140,h:350,s:80,l:58},{v:200,h:335,s:88,l:50}];
-      function interp(r){ if(r<=stops[0].v)return{...stops[0]}; if(r>=stops[stops.length-1].v)return{...stops[stops.length-1]}; let a=stops[0],b=stops[1]; for(let i=0;i<stops.length-1;i++){if(r>=stops[i].v&&r<=stops[i+1].v){a=stops[i];b=stops[i+1];break;}} const t=(r-a.v)/(b.v-a.v); let h0=a.h,h1=b.h; if(Math.abs(h1-h0)>180){if(h1<h0)h1+=360;else h0+=360;} return{h:((h0+(h1-h0)*t)+360)%360,s:a.s+(b.s-a.s)*t,l:a.l+(b.l-a.l)*t}; }
-      function rcol(r){const{h,s,l}=interp(r);return `hsl(${h.toFixed(1)},${s.toFixed(1)}%,${l.toFixed(1)}%)`;}
-      function llabel(r){const{h,s,l}=interp(r);return `hsl(${h.toFixed(1)},${Math.max(s-10,40).toFixed(1)}%,${Math.min(l+18,86).toFixed(1)}%)`;}
-      function rankIdx(arr,key){const so=arr.map((d,i)=>({d,i})).sort((a,b)=>a.d[key]-b.d[key]||a.i-b.i); const r=new Array(arr.length); so.forEach((s,k)=>{r[s.i]=k}); return r;}
-      let inst=null;
-      function render(){
-        const cv=document.getElementById("bubbleChart"); if(!cv||typeof Chart==="undefined")return;
-        const raw=getRows(); if(!raw.length)return;
-        const N=raw.length, xR=rankIdx(raw,"w"), yR=rankIdx(raw,"r");
-        const pts=raw.map((d,i)=>{const c=rcol(d.r); return{x:xR[i],y:yR[i],r:bsize(d.w),_name:d.name,_w:d.w,_r:d.r,_anchor:"top",backgroundColor:c,borderColor:c};});
-        const xMid=(N-1)/2, yMid=(N-1)/2;
-        // edge-aware + 위치기반 anchor
-        for(const p of pts){const dx=p.x-xMid,dy=p.y-yMid; const rE=p.x>=N-1.5,lE=p.x<=0.5,tE=p.y>=N-1.5,bE=p.y<=0.5; if(rE&&!tE&&!bE)p._anchor="left"; else if(lE&&!tE&&!bE)p._anchor="right"; else if(tE)p._anchor="bottom"; else if(bE)p._anchor="top"; else if(Math.abs(dy)>=Math.abs(dx))p._anchor=dy>=0?"top":"bottom"; else p._anchor=dx>=0?"right":"left";}
-        // 충돌 분리
-        for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const p=pts[i],q=pts[j]; if(Math.hypot(p.x-q.x,p.y-q.y)<2.5&&p._anchor===q._anchor){const dx=q.x-p.x,dy=q.y-p.y; if(Math.abs(dy)>=Math.abs(dx)){if(dy>=0){p._anchor="bottom";q._anchor="top";}else{p._anchor="top";q._anchor="bottom";}}else{if(dx>=0){p._anchor="left";q._anchor="right";}else{p._anchor="right";q._anchor="left";}}}}
-        const sW=[...raw].sort((a,b)=>a.w-b.w).map(d=>d.w);
-        const sR=[...raw].sort((a,b)=>a.r-b.r).map(d=>d.r);
-        function zeroRank(){if(sR[0]>=0)return -0.5; if(sR[sR.length-1]<0)return sR.length-0.5; for(let i=0;i<sR.length;i++)if(sR[i]>=0)return i-0.5; return null;}
-        const qbg={id:"qbg",beforeDatasetsDraw(c){const{ctx,chartArea:ca,scales:s}=c; if(!ca)return; const px=s.x.getPixelForValue(xMid),py=s.y.getPixelForValue(yMid); ctx.save(); ctx.strokeStyle="rgba(255,255,255,0.10)";ctx.lineWidth=1;ctx.setLineDash([4,4]); ctx.beginPath();ctx.moveTo(px,ca.top);ctx.lineTo(px,ca.bottom);ctx.moveTo(ca.left,py);ctx.lineTo(ca.right,py);ctx.stroke(); ctx.restore(); ctx.save();ctx.font="600 11px system-ui"; ctx.fillStyle="rgba(244,114,182,0.75)";ctx.textAlign="right";ctx.textBaseline="top";ctx.fillText("⭐ 핵심 winner",ca.right-8,ca.top+8); ctx.fillStyle="rgba(190,242,100,0.75)";ctx.textAlign="left";ctx.fillText("🛒 추가매수 후보",ca.left+8,ca.top+8); ctx.fillStyle="rgba(248,113,113,0.85)";ctx.textAlign="right";ctx.textBaseline="bottom";ctx.fillText("⚠️ 위험",ca.right-8,ca.bottom-8); ctx.fillStyle="rgba(248,113,113,0.85)";ctx.textAlign="left";ctx.fillText("✂️ 컷 후보",ca.left+8,ca.bottom-8); ctx.restore();}};
-        const zline={id:"zero",
-          beforeDatasetsDraw(c){const{ctx,chartArea:ca,scales:s}=c; if(!ca)return; const zr=zeroRank(); if(zr==null)return; const zy=s.y.getPixelForValue(zr); if(zy>=ca.bottom)return; ctx.save(); const g=ctx.createLinearGradient(0,zy,0,ca.bottom); g.addColorStop(0,"rgba(220,38,38,0.04)"); g.addColorStop(0.5,"rgba(220,38,38,0.10)"); g.addColorStop(1,"rgba(220,38,38,0.18)"); ctx.fillStyle=g; ctx.fillRect(ca.left,zy,ca.right-ca.left,ca.bottom-zy); ctx.restore();},
-          afterDatasetsDraw(c){const{ctx,chartArea:ca,scales:s}=c; if(!ca)return; const zr=zeroRank(); if(zr==null)return; const zy=s.y.getPixelForValue(zr); ctx.save(); ctx.strokeStyle="rgba(148,163,184,0.35)";ctx.lineWidth=1;ctx.setLineDash([5,4]); ctx.beginPath();ctx.moveTo(ca.left,zy);ctx.lineTo(ca.right,zy);ctx.stroke();ctx.setLineDash([]); ctx.font="700 11px system-ui";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillStyle="rgba(203,213,225,0.9)";ctx.fillText("0%",ca.left+6,zy); ctx.font="600 10px system-ui";ctx.textBaseline="bottom";ctx.fillStyle="hsl(95,55%,75%)";ctx.fillText("▲ 수익",ca.left+6,zy-4); ctx.textBaseline="top";ctx.fillStyle="hsl(0,75%,75%)";ctx.fillText("▼ 손실 ⚠️",ca.left+6,zy+4); ctx.restore();}};
-        const lbl={id:"lbl",afterDatasetsDraw(c){const{ctx}=c,ps=c.getDatasetMeta(0).data; ctx.save(); for(let i=0;i<ps.length;i++){const p=ps[i],d=pts[i],r=(p.options&&p.options.radius)||d.r; let lx=p.x,ly=p.y,al="center",bl="bottom";const g=7; if(d._anchor==="top"){ly=p.y-r-g;bl="bottom";al="center";} if(d._anchor==="bottom"){ly=p.y+r+g;bl="top";al="center";} if(d._anchor==="right"){lx=p.x+r+g;al="left";bl="middle";} if(d._anchor==="left"){lx=p.x-r-g;al="right";bl="middle";} ctx.textAlign=al;ctx.textBaseline=bl; ctx.font="700 13px -apple-system,system-ui,'Apple SD Gothic Neo',sans-serif"; ctx.strokeStyle="rgba(15,23,42,0.92)";ctx.lineWidth=4;ctx.strokeText(d._name,lx,ly); ctx.fillStyle="#f8fafc";ctx.fillText(d._name,lx,ly); ctx.font="600 11px system-ui"; const ySub=d._anchor==="top"?ly-14:(d._anchor==="bottom"?ly+14:ly+13); const wStr=`${d._w}%`,sep=" / ",rStr=`${d._r>=0?"+":""}${d._r}%`; const rColor=llabel(d._r); const wW=ctx.measureText(wStr).width,sW2=ctx.measureText(sep).width,rW=ctx.measureText(rStr).width; const total=wW+sW2+rW; let sx; if(al==="center")sx=lx-total/2; else if(al==="left")sx=lx; else sx=lx-total; ctx.textAlign="left"; ctx.strokeStyle="rgba(15,23,42,0.92)";ctx.lineWidth=3; ctx.strokeText(wStr,sx,ySub);ctx.strokeText(sep,sx+wW,ySub);ctx.strokeText(rStr,sx+wW+sW2,ySub); ctx.fillStyle="#ffffff";ctx.fillText(wStr,sx,ySub); ctx.fillStyle="rgba(203,213,225,0.65)";ctx.fillText(sep,sx+wW,ySub); ctx.fillStyle=rColor;ctx.fillText(rStr,sx+wW+sW2,ySub);} ctx.restore();}};
-        if(inst)inst.destroy();
-        inst=new Chart(cv.getContext("2d"),{type:"bubble",data:{datasets:[{data:pts.map(p=>({x:p.x,y:p.y,r:p.r})),backgroundColor:pts.map(p=>p.backgroundColor),borderColor:pts.map(p=>p.borderColor),borderWidth:1.5}]},options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:36,right:50,bottom:12,left:12}},plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>{const d=pts[c.dataIndex];return `${d._name}: 비중 ${d._w}%, 수익률 ${d._r>=0?"+":""}${d._r}%`;}}}},scales:{x:{type:"linear",title:{display:true,text:"← 비중 적음   |   비중 많음 →",color:"#94a3b8",font:{size:12}},min:-0.7,max:N-0.3,ticks:{color:"#94a3b8",font:{size:10},stepSize:1,callback:(v)=>{const r=Math.round(v); if(r<0||r>=N)return""; if(r%3!==0&&r!==N-1)return""; return sW[r]!=null?sW[r]+"%":"";}},grid:{color:"rgba(148,163,184,0.06)",drawBorder:false}},y:{type:"linear",title:{display:false},min:-0.7,max:N-0.3,ticks:{color:"#94a3b8",font:{size:10},stepSize:1,callback:(v)=>{const r=Math.round(v); if(r<0||r>=N)return""; if(r%3!==0&&r!==N-1)return""; const x=sR[r]; return x!=null?(x>=0?"+":"")+x+"%":"";}},grid:{color:"rgba(148,163,184,0.06)",drawBorder:false}}}},plugins:[qbg,zline,lbl]});
-      }
-      if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",render);
-      else render();
-      window.renderBubbleChart=render;
-    })();
+    
+    // bubble chart: handled by standalone script
+
 
 
 
