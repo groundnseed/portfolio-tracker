@@ -106,9 +106,7 @@
     const N=raw.length, xR=rankIdx(raw,"w"), yR=rankIdx(raw,"r");
     const pts=raw.map((d,i)=>{const c=rcol(d.r); return{x:xR[i],y:yR[i],r:bsize(d.w),_name:d.name,_w:d.w,_r:d.r,_anchor:"top",backgroundColor:c,borderColor:c};});
     const xMid=(N-1)/2, yMid=(N-1)/2;
-    // edge-aware + 위치기반 anchor
     for(const p of pts){const dx=p.x-xMid,dy=p.y-yMid; const rE=p.x>=N-1.5,lE=p.x<=0.5,tE=p.y>=N-1.5,bE=p.y<=0.5; if(rE&&!tE&&!bE)p._anchor="left"; else if(lE&&!tE&&!bE)p._anchor="right"; else if(tE)p._anchor="bottom"; else if(bE)p._anchor="top"; else if(Math.abs(dy)>=Math.abs(dx))p._anchor=dy>=0?"top":"bottom"; else p._anchor=dx>=0?"right":"left";}
-    // 충돌 분리
     for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const p=pts[i],q=pts[j]; if(Math.hypot(p.x-q.x,p.y-q.y)<2.5&&p._anchor===q._anchor){const dx=q.x-p.x,dy=q.y-p.y; if(Math.abs(dy)>=Math.abs(dx)){if(dy>=0){p._anchor="bottom";q._anchor="top";}else{p._anchor="top";q._anchor="bottom";}}else{if(dx>=0){p._anchor="left";q._anchor="right";}else{p._anchor="right";q._anchor="left";}}}}
     const sW=[...raw].sort((a,b)=>a.w-b.w).map(d=>d.w);
     const sR=[...raw].sort((a,b)=>a.r-b.r).map(d=>d.r);
