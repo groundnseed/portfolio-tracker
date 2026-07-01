@@ -158,27 +158,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // delta: +N 또는 -N (%p 변화량), today:true → 오늘 거래
     const holdings = [
       // 🇰🇷 KR
-      { name:'삼성전기', market:'kr', pct:12.0 },
       { name:'KODEX200', market:'kr', pct:12.0 },
-      { name:'SK하이닉스', market:'kr', pct:9.0 },
-      { name:'삼성전자', market:'kr', pct:8.0 },
+      { name:'SK하이닉스', market:'kr', pct:6.5 },
+      { name:'삼성전자', market:'kr', pct:6.0 },
+      { name:'삼성전기', market:'kr', pct:6.0 },
       { name:'KB금융', market:'kr', pct:4.0 },
       { name:'현대차', market:'kr', pct:3.0 },
-      { name:'OCI', market:'kr', pct:2.0 },
       { name:'LS Elec', market:'kr', pct:2.0 },
-      { name:'삼성증권', market:'kr', pct:2.0 },
+      { name:'두산에너', market:'kr', pct:2.0 },
+      { name:'OCI', market:'kr', pct:2.0 },
       // 🇺🇲 US (내림차순 정렬)
       { name:'LRCX', market:'us', pct:6.0 },
-      { name:'IWM', market:'us', pct:6.0 },
       { name:'INTC', market:'us', pct:5.0 },
+      { name:'IWM', market:'us', pct:5.0 },
+      { name:'SNDK', market:'us', pct:3.0 },
+      { name:'DDOG', market:'us', pct:3.0 },
       { name:'ARM', market:'us', pct:3.0 },
       { name:'MRVL', market:'us', pct:3.0 },
       { name:'GS', market:'us', pct:3.0 },
-      { name:'SNDK', market:'us', pct:3.0 },
-      { name:'DDOG', market:'us', pct:3.0 },
-      { name:'CAT', market:'us', pct:3.0 },
-      { name:'AMAT', market:'us', pct:3.0 },
-      { name:'BE', market:'us', pct:2.0 },
+      { name:'COHR', market:'us', pct:2.0 },
       { name:'CSCO', market:'us', pct:2.0 }
     ];
 
@@ -274,7 +272,9 @@ document.addEventListener('DOMContentLoaded', function() {
       { date:'6/15', kr:37.5, us:31.0, total:68.5 },
       { date:'6/16', kr:40.5, us:35.0, total:75.5, callout:{ text:'6/16\n여름3 75.5%' } },
       { date:'6/17', kr:43.5, us:37.0, total:80.5 },
-      { date:'6/19', kr:54.0, us:42.0, total:96.0, callout:{ text:'6/19\n222화 96%', pinned: true } }
+      { date:'6/19', kr:54.0, us:42.0, total:96.0, callout:{ text:'6/19\n222화 96%' } },
+      { date:'6/30', kr:44.0, us:31.5, total:75.5, callout:{ text:'6/30\n여름 6/30', pinned: true } }
+    
     ];
 
     // ═══════════════════════════════════════════════════
@@ -1050,15 +1050,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ═══════════════════════════════════════════════════
     const stockReturns = [
     {
-        "ticker": "KRX:009150",
-        "name": "삼성전기",
-        "market": "kr",
-        "pct": 12.0,
-        "basisPrice": 518233.33,
-        "currentPrice": 2184000.0,
-        "returnPct": 321.43
-    },
-    {
         "ticker": "KRX:069500",
         "name": "KODEX 200",
         "market": "kr",
@@ -1071,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', function() {
         "ticker": "KRX:000660",
         "name": "SK하이닉스",
         "market": "kr",
-        "pct": 9.0,
+        "pct": 6.5,
         "basisPrice": 1053700.0,
         "currentPrice": 2650000.0,
         "returnPct": 151.49
@@ -1080,10 +1071,19 @@ document.addEventListener('DOMContentLoaded', function() {
         "ticker": "KRX:005930",
         "name": "삼성전자",
         "market": "kr",
-        "pct": 8.0,
+        "pct": 6.0,
         "basisPrice": 203000.0,
         "currentPrice": 334000.0,
         "returnPct": 64.53
+    },
+    {
+        "ticker": "KRX:009150",
+        "name": "삼성전기",
+        "market": "kr",
+        "pct": 6.0,
+        "basisPrice": 518233.33,
+        "currentPrice": 2184000.0,
+        "returnPct": 321.43
     },
     {
         "ticker": "KRX:105560",
@@ -1104,15 +1104,6 @@ document.addEventListener('DOMContentLoaded', function() {
         "returnPct": -8.47
     },
     {
-        "ticker": "KRX:010060",
-        "name": "OCI홀딩스",
-        "market": "kr",
-        "pct": 2.0,
-        "basisPrice": 208242.86,
-        "currentPrice": 214500.0,
-        "returnPct": 3.0
-    },
-    {
         "ticker": "KRX:010120",
         "name": "LS ELECTRIC",
         "market": "kr",
@@ -1122,13 +1113,22 @@ document.addEventListener('DOMContentLoaded', function() {
         "returnPct": 27.39
     },
     {
-        "ticker": "KRX:016360",
-        "name": "삼성증권",
+        "ticker": "KRX:034020",
+        "name": "두산에너빌리티",
         "market": "kr",
         "pct": 2.0,
-        "basisPrice": 118800.0,
-        "currentPrice": 114000.0,
-        "returnPct": -4.04
+        "basisPrice": null,
+        "currentPrice": null,
+        "returnPct": 0
+    },
+    {
+        "ticker": "KRX:010060",
+        "name": "OCI홀딩스",
+        "market": "kr",
+        "pct": 2.0,
+        "basisPrice": 208242.86,
+        "currentPrice": 214500.0,
+        "returnPct": 3.0
     },
     {
         "ticker": "NASDAQ:LRCX",
@@ -1140,15 +1140,6 @@ document.addEventListener('DOMContentLoaded', function() {
         "returnPct": 83.42
     },
     {
-        "ticker": "NYSEARCA:IWM",
-        "name": "iShares Russell 2000",
-        "market": "us",
-        "pct": 6.0,
-        "basisPrice": 268.58,
-        "currentPrice": 300.45,
-        "returnPct": 11.87
-    },
-    {
         "ticker": "NASDAQ:INTC",
         "name": "Intel",
         "market": "us",
@@ -1156,6 +1147,33 @@ document.addEventListener('DOMContentLoaded', function() {
         "basisPrice": 55.3,
         "currentPrice": 139.63,
         "returnPct": 152.5
+    },
+    {
+        "ticker": "NYSEARCA:IWM",
+        "name": "iShares Russell 2000",
+        "market": "us",
+        "pct": 5.0,
+        "basisPrice": 268.58,
+        "currentPrice": 300.45,
+        "returnPct": 11.87
+    },
+    {
+        "ticker": "NASDAQ:SNDK",
+        "name": "SanDisk",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 763.12,
+        "currentPrice": 2273.73,
+        "returnPct": 197.95
+    },
+    {
+        "ticker": "NASDAQ:DDOG",
+        "name": "Datadog",
+        "market": "us",
+        "pct": 3.0,
+        "basisPrice": 229.9,
+        "currentPrice": 221.37,
+        "returnPct": -3.71
     },
     {
         "ticker": "NASDAQ:ARM",
@@ -1185,49 +1203,13 @@ document.addEventListener('DOMContentLoaded', function() {
         "returnPct": 4.1
     },
     {
-        "ticker": "NASDAQ:SNDK",
-        "name": "SanDisk",
+        "ticker": "NASDAQ:COHR",
+        "name": "Coherent",
         "market": "us",
-        "pct": 3.0,
-        "basisPrice": 763.12,
-        "currentPrice": 2273.73,
-        "returnPct": 197.95
-    },
-    {
-        "ticker": "NASDAQ:DDOG",
-        "name": "Datadog",
-        "market": "us",
-        "pct": 3.0,
-        "basisPrice": 229.9,
-        "currentPrice": 221.37,
-        "returnPct": -3.71
-    },
-    {
-        "ticker": "NYSE:CAT",
-        "name": "Caterpillar",
-        "market": "us",
-        "pct": 3.0,
-        "basisPrice": 910.57,
-        "currentPrice": 1064.9,
-        "returnPct": 16.95
-    },
-    {
-        "ticker": "NASDAQ:AMAT",
-        "name": "Applied Materials",
-        "market": "us",
-        "pct": 3.0,
+        "pct": 2.0,
         "basisPrice": null,
         "currentPrice": null,
         "returnPct": 0
-    },
-    {
-        "ticker": "NYSE:BE",
-        "name": "Bloom Energy",
-        "market": "us",
-        "pct": 2.0,
-        "basisPrice": 260.22,
-        "currentPrice": 345.85,
-        "returnPct": 32.91
     },
     {
         "ticker": "NASDAQ:CSCO",
