@@ -58,6 +58,8 @@ NAME_TO_TICKER = {
     'AMAT': 'NASDAQ:AMAT', 'Applied Materials': 'NASDAQ:AMAT', '어플라이드': 'NASDAQ:AMAT',
     'BE': 'NYSE:BE', 'Bloom Energy': 'NYSE:BE', '블룸': 'NYSE:BE',
     '삼성증권': 'KRX:016360',
+    'GEV': 'NYSE:GEV', 'GE Vernova': 'NYSE:GEV',
+    '두산에저빌리티': 'KRX:034020',
 }
 
 # 티커 → 표시 정보 (US English / KR Korean) — index.html 표기 통일
@@ -95,6 +97,7 @@ TICKER_DISPLAY = {
     'NASDAQ:DDOG': {'short': 'DDOG', 'long': 'Datadog', 'market': 'us'},
     'NASDAQ:AMAT': {'short': 'AMAT', 'long': 'Applied Materials', 'market': 'us'},
     'NYSE:BE': {'short': 'BE', 'long': 'Bloom Energy', 'market': 'us'},
+    'NYSE:GEV': {'short': 'GEV', 'long': 'GE Vernova', 'market': 'us'},
 }
 
 
