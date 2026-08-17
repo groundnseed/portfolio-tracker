@@ -1485,6 +1485,10 @@ document.addEventListener('DOMContentLoaded', function() {
       return b.returnPct - a.returnPct;
     });
 
+    // v3 버블 차트에 데이터 노출 (stockReturns는 이 콜백 스코프에 있어 전역 노출 필요)
+    window.stockReturns = stockReturns;
+    if (typeof window.renderBubbleChart === 'function') window.renderBubbleChart();
+
     // 상단 노트: 최종 수익률 요약 (returnEvents 마지막 entry + stockReturns 합계 기준 동적)
     const _lastRE = returnEvents[returnEvents.length - 1] || { totalReturn: 0, krReturn: 0, usReturn: 0 };
     const _totalW = stockReturns.reduce((s, x) => s + (x.basisPrice && x.pct > 0 ? x.pct : 0), 0);
